@@ -12,7 +12,7 @@
 
       <script>
         $(function() {
-          setupLanguages(["python"]);
+          setupLanguages(["python","csharp"]);
         });
       </script>
   </head>
@@ -35,20 +35,6 @@
       <div class="content">
         <h1 id="overview">Overview</h1>
 
-<p>The Arbiter API is a RESTful and returns consistent JSON structures in every response. Before getting started, be sure you are familiar with the following HTTP features:</p>
-
-<h3 id="get">GET</h3>
-
-<p>Requesting existing resources.</p>
-
-<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
-
-<h3 id="post">POST</h3>
-
-<p>Performing resource updates and actions.</p>
-
-<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
-
 <h2 id="core-classes">Core Classes</h2>
 
 <p>Arbiter has 3 core classes that you will interact with as you develop your game. Before writing any code, spend 2 minutes getting familiar with these classes.</p>
@@ -64,6 +50,62 @@
 <h3 id="wallet">Wallet</h3>
 
 <p>Each Arbiter <code class="prettyprint">User</code> is given an Arbiter <code class="prettyprint">Wallet</code>. This request will occur directly between your players&#39; device and the Arbiter server. The user can then deposit to this wallet using a Credit Card, PayPal, or with Bitcoin. At any point, a user can make a withdraw from their Arbiter Wallet back to any Debit Card, PayPal account, or Bitcoin address.</p>
+
+<h2 id="http-api-best-practices">HTTP API Best Practices</h2>
+
+<p>The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on basic HTTP built in features. As long as you are familiar with the HTTP features below, the API should behave pretty straight forward.</p>
+
+<h2 id="http-status-codes">HTTP Status Codes</h2>
+
+<p>Our API uses the built in HTTP Status Code to help you track down an issue if the API is not responding with a success.</p>
+
+<table><thead>
+<tr>
+<th>Code</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">200</code> OK</td>
+<td>The requested action was successful.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">400</code> Bad Request</td>
+<td>A required parameter was missing in your request data.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">401</code> Unauthorized</td>
+<td>Missing or invalid access token in your Authorization Header.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">402</code> Request Failed</td>
+<td>All parameters were included, but at least one did not pass validation.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">404</code> Not Found</td>
+<td>Incorrect url or ID in a url.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">500</code> Server Error</td>
+<td>Something went wrong on our end. We get notified every single time you see this and are looking into what caused the problem.</td>
+</tr>
+</tbody></table>
+
+<h2 id="http-methods">HTTP Methods</h2>
+
+<p>Our API relies on the built in HTTP verbs <code class="prettyprint">GET</code> and <code class="prettyprint">POST</code> for handling object detail requests versus object creates or updates.</p>
+
+<h3 id="get">GET</h3>
+
+<p>Requesting existing resources.</p>
+
+<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
+
+<h3 id="post">POST</h3>
+
+<p>Performing resource updates and actions.</p>
+
+<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
 
 <h2 id="response-objects">Response Objects</h2>
 <pre class="highlight python"><span class="c"># Example response from https://www.arbiter.me/api/v1/wallet/</span>
@@ -775,13 +817,21 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <h1 id="unity-sdk">Unity SDK</h1>
 
-<p>TODO: Flush out SDK documentation</p>
+<p><a href="https://github.com/andyzinsser/arbiter-ios-sdk-example">Download the SDK</a></p>
 
 <h2 id="initialize">Initialize</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Initialize</span><span class="p">(</span> <span class="n">GAME_API_KEY</span><span class="p">,</span> <span class="n">CallbackFunction</span> <span class="p">);</span>
+</pre>
+
+<h2 id="agree-to-terms-of-service">Agree to Terms of Service</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">VerifyUser</span><span class="p">();</span>
+</pre>
 
 <h2 id="query-user">Query User</h2>
 
 <h2 id="query-wallet">Query Wallet</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">QueryWallet</span><span class="p">();</span>
+</pre>
 
 <h2 id="deposit">Deposit</h2>
 
@@ -799,6 +849,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
       <div class="dark-box">
           <div id="lang-selector">
                 <a href="#" data-language-name="python">python</a>
+                <a href="#" data-language-name="csharp">csharp</a>
           </div>
       </div>
     </div>
