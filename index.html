@@ -1,0 +1,878 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <title>Arbiter Documentation</title>
+
+    <link href="stylesheets/screen.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" type="text/css" media="print" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="javascripts/all.js" type="text/javascript"></script>
+
+      <script>
+        $(function() {
+          setupLanguages(["python","csharp"]);
+        });
+      </script>
+  </head>
+
+  <body class="index">
+    <div class="tocify-wrapper">
+      <img src="images/logo.png" />
+        <div class="search">
+          <input type="text" class="search" id="input-search">
+        </div>
+        <div class="search-info"></div>
+      <div id="toc">
+      </div>
+        <ul class="toc-footer">
+            <li><a href='https://www.arbiter.me/dashboard/' target='_blank'>Login to your Developer Dashboard</a></li>
+        </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id="overview">Overview</h1>
+
+<h2 id="core-classes">Core Classes</h2>
+
+<p>Arbiter has 3 core classes that you will interact with as you develop your game. Before writing any code, spend 2 minutes getting familiar with these classes.</p>
+
+<h3 id="user">User</h3>
+<pre class="highlight python"><span class="c"># Example User</span>
+<span class="s">'user'</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span>
+    <span class="s">'token'</span><span class="p">:</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span><span class="p">,</span>
+    <span class="s">'claim_account_url'</span><span class="p">:</span> <span class="s">'https://www.arbiter.me/api/v1/user/40628a4750f74b7a9e1827812e7af815/f80819ef573f699c2723b0c15f1c24bf704ae8a5ef5363083434831bed36c518'</span><span class="p">,</span>
+    <span class="s">'is_verified'</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s">'username'</span><span class="p">:</span> <span class="s">'anonymous'</span>
+<span class="p">}</span>
+</pre>
+
+<p>Your users&#39; devices interact directly with our server. The first time a player&rsquo;s device connects with Arbiter, we create an anonymous <code class="prettyprint">User</code> and return a unique ID for that user. This ID is what you will use to make requests on that user&rsquo;s behalf in the future from your server. By default, all users are playing anonymously. At any point, they can create login credentials for their account to log back in with those credentials using our Login API.</p>
+
+<p><aside>
+    <strong>Who owns the user?</strong><br>
+    You still own your user. The first time a user loads your game with Arbiter installed, we return a unique ID and token for you to store in your user database. All future authentication between Arbiter and your user can be completed using this ID and token.
+</aside></p>
+
+<h3 id="wallet">Wallet</h3>
+<pre class="highlight python"><span class="c"># Example Wallet</span>
+<span class="s">'wallet'</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">'deposit_address'</span><span class="p">:</span> <span class="s">'1JbbREwe8Vb9DAVzB2zWtNYvKDYLyjyV3C'</span><span class="p">,</span>
+    <span class="s">'balance'</span><span class="p">:</span> <span class="s">'50'</span><span class="p">,</span>
+    <span class="s">'pending_balance'</span><span class="p">:</span> <span class="s">'623'</span>
+<span class="p">}</span>
+</pre>
+
+<p>Each Arbiter <code class="prettyprint">User</code> is given an Arbiter <code class="prettyprint">Wallet</code>. This request will occur directly between your players&#39; device and the Arbiter server. The user can then deposit to this wallet using a Credit Card, PayPal, or with Bitcoin. At any point, a user can make a withdraw from their Arbiter Wallet back to any Debit Card, PayPal account, or Bitcoin address.</p>
+
+<h3 id="tournament">Tournament</h3>
+<pre class="highlight python"><span class="c"># Example Tournament</span>
+<span class="s">'tournament'</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+    <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+    <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+    <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+<span class="p">}</span>
+</pre>
+
+<p>Tournaments are the core class handling all the betting interactions between your players. Your server will create a new <code class="prettyprint">Tournament</code> for each betting interaction between the players in your game. Once a <code class="prettyprint">Tournament</code> has been created, your users will be able to buy in to the <code class="prettyprint">Tournament</code>. After your users have finished battling it out in your game, your server will report who won. Arbiter will then charge a transacaction fee (some for us, and some for you) and then release the remaining funds in the <code class="prettyprint">Tournament</code> to the winning user&rsquo;s Arbiter <code class="prettyprint">Wallet</code>.</p>
+
+<h2 id="http-api-best-practices">HTTP API Best Practices</h2>
+
+<p>The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built in HTTP features. As long as you are familiar with the HTTP features below, the API should behave straight forward.</p>
+
+<h2 id="http-status-codes">HTTP Status Codes</h2>
+
+<p>Our API uses HTTP status codes to help you track down an issue if the API is not working as you would expect.</p>
+
+<table><thead>
+<tr>
+<th>Code</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">200</code></td>
+<td>OK</td>
+<td>The requested action was successful.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">400</code></td>
+<td>Bad Request</td>
+<td>A required parameter was missing or invalid.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">401</code></td>
+<td>Unauthorized</td>
+<td>Missing or invalid access token in your Authorization Header.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">404</code></td>
+<td>Not Found</td>
+<td>Incorrect url or ID in a url.</td>
+</tr>
+<tr>
+<td><code class="prettyprint">500</code></td>
+<td>Server Error</td>
+<td>Something went wrong on our end. We get notified every single time you see this and are looking into what caused the problem.</td>
+</tr>
+</tbody></table>
+
+<h2 id="http-methods">HTTP Methods</h2>
+
+<p>Our API relies on the built in HTTP verbs <code class="prettyprint">GET</code> and <code class="prettyprint">POST</code> for handling object detail requests versus object creates or updates.</p>
+
+<h3 id="get">GET</h3>
+
+<p>Requesting existing resources.</p>
+
+<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
+
+<h3 id="post">POST</h3>
+
+<p>Performing resource updates and actions.</p>
+
+<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
+
+<h2 id="response-objects">Response Objects</h2>
+<pre class="highlight python"><span class="c"># Example response from https://www.arbiter.me/api/v1/wallet/</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">'wallet'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'deposit_address'</span><span class="p">:</span> <span class="s">'1Mdx1V81LJeyZk6yBizRny6KXxyMTXHGpw'</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'0'</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p>All APIs return json with the following keys:</p>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>success</td>
+<td>Boolean</td>
+<td>Whether or not the requested action was performed.</td>
+</tr>
+<tr>
+<td>OBJECT_NAME</td>
+<td>dictionary</td>
+<td>A dictionary containing the relavant object being queried or edited. This key will be the name of object type (ie: user, wallet, jackpot, etc).</td>
+</tr>
+<tr>
+<td>errors</td>
+<td>array</td>
+<td>An array of errors (if any errors occurred).</td>
+</tr>
+</tbody></table>
+
+<h2 id="authentication">Authentication</h2>
+<pre class="highlight python"><span class="c"># Example of an request with Authorization Header</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># User tokens are included in Initialize and User Details API</span>
+<span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+<span class="c"># Game API Keys are available in your Developer Dashboard</span>
+<span class="n">GAME_API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">GAME_API_KEY</span><span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'https://www.arbiter.me/api/v1/user/details'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+</pre>
+
+<p>All requests are authenticated using the HTTP Authorization Header</p>
+
+<p><a href="http://en.wikipedia.org/wiki/List_of_HTTP_header_fields">More on HTTP Headers</a></p>
+
+<h1 id="getting-started">Getting Started</h1>
+
+<p>Before digging into the details below, spend 2 minutes reading the <a href="/?python#core-classes">Core Classes</a> section. It will get you familiar with the core classes you will be interacting with.</p>
+
+<h2 id="configure-your-game">Configure Your Game</h2>
+
+<p><a href="https://www.arbiter.me/developer-registration/">Create an Arbiter developer account</a> to configure your game and save  your API Key.</p>
+
+<p>Configuring your game
+In your dashboard, click the &lsquo;Register new game&rsquo; button in the games tab.</p>
+
+<h3 id="game-configuration-form">Game Configuration Form</h3>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>name</td>
+<td>A label for your game.</td>
+</tr>
+<tr>
+<td>rake amount</td>
+<td>The percentage of each player payout you want to charge. Valid range is 0 through 99. <code class="prettyprint">payout = balance - your rake % - Arbiter fee (5%)</code>.</td>
+</tr>
+<tr>
+<td>matchmaking</td>
+<td>Will this game use Arbiter&rsquo;s Matchmaking service to find similar skilled challengers when a user requests a match?</td>
+</tr>
+</tbody></table>
+
+<p>Once you have saved the configuration form, an API key will be generated for your game. Store this on your server for making authenticated calls. See <a href="#authentication">Authentication</a> for more on how to make authenticated requests.</p>
+
+<h1 id="user-api">User API</h1>
+
+<h2 id="initialize">Initialize</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'https://www.arbiter.me/api/v1/user/initialize'</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">'user'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span>
+        <span class="s">'token'</span><span class="p">:</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span><span class="p">,</span>
+        <span class="s">'claim_account_url'</span><span class="p">:</span> <span class="s">'https://www.arbiter.me/api/v1/user/40628a4750f74b7a9e1827812e7af815/f80819ef573f699c2723b0c15f1c24bf704ae8a5ef5363083434831bed36c518'</span><span class="p">,</span>
+        <span class="s">'is_verified'</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="s">'username'</span><span class="p">:</span> <span class="s">'anonymous'</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p>The initialize call should be made at the beginning of every user&rsquo;s session in your game. Arbiter creates an anonymous session with the user. The session is managed through the <code class="prettyprint">token</code> returned in the first response.</p>
+
+<p>Future requests made for this user require the <code class="prettyprint">token</code> in the request headers. Store the user.id and user.token in your database or locally on the device for future requests.</p>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">GET https://www.arbiter.me/api/v1/user/initialize</code></p>
+
+<h3 id="returned-user-object">Returned User Object</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique Arbiter ID for this user. Save this in your DB for requests involving this users</td>
+</tr>
+<tr>
+<td>token</td>
+<td>string</td>
+<td>Authentication token for this user. Save this in your DB and keep it private. This will be included in request headers in future requests to authenticate a request made on behalf of this user.</td>
+</tr>
+<tr>
+<td>is_verified</td>
+<td>boolean</td>
+<td>Whether or not this user has agreed to Arbiter&rsquo;s Terms of Service.</td>
+</tr>
+<tr>
+<td>username</td>
+<td>string</td>
+<td>Display name of this user. If they have not created an account using the claim_url, this will be anonymous</td>
+</tr>
+<tr>
+<td>claim_account_url</td>
+<td>string</td>
+<td>A unique URL for this user to claim their Arbiter Account. Once they have claimed their account, they can login to their <a href="https://www.arbiter.me/dashboard/">Player Dashboard</a>. They can also use their account credentials to login to an Arbiter enabled game and have access to their existing wallet created in a previous session.</td>
+</tr>
+</tbody></table>
+
+<h2 id="agree-to-terms-of-service">Agree to Terms of Service</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># id and token returned from the /user/initialize call</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span>
+<span class="n">user_token</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># Game API Key from your developer dashboard</span>
+<span class="n">api_key</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/user/'</span> <span class="o">+</span> <span class="n">user_id</span> <span class="o">+</span> <span class="s">'/verify'</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">user_token</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">api_key</span>
+<span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">success</span><span class="p">:</span> <span class="bp">True</span>
+<span class="p">}</span>
+</pre>
+
+<p>Before a user can participate in a wager, we need to confirm that the user is over 18, their local jurisdiction allows skill based betting online, and they need to agree to the <a href="https://www.arbiter.me/terms/">Arbiter Terms of Service</a>. Display the exact text below with a confirmation button that posts to the the confirmation API.</p>
+
+<p><aside class='notice'>
+    By clicking the confirmation button below, you agreeing to the <a href="https://www.arbiter.me/terms/">Arbiter Terms of Service</a> and confirming that you are at least 18 years of age.
+</aside></p>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">POST https://www.arbiter.me/api/v1/user/&lt;USER ID&gt;/verify</code></p>
+
+<h3 id="returns">Returns</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>success</td>
+<td>boolean</td>
+<td>Whether or not the user&rsquo;s account was successfully verified</td>
+</tr>
+</tbody></table>
+
+<h2 id="user-details">User details</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># id and token returned from the user/initialize or user/login call</span>
+<span class="c"># IMPORTANT: Keep your users' tokens private</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span>
+<span class="n">user_token</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">api_key</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">user_token</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">api_key</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/user/'</span> <span class="o">+</span> <span class="n">user_id</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">'user'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span>
+        <span class="s">'is_verified'</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+        <span class="s">'username'</span><span class="p">:</span> <span class="s">'anonymous'</span><span class="p">,</span>
+        <span class="s">'token'</span><span class="p">:</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+    <span class="p">},</span>
+    <span class="s">'wallet'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'deposit_address'</span><span class="p">:</span> <span class="s">'1JbbREwe8Vb9DAVzB2zWtNYvKDYLyjyV3C'</span><span class="p">,</span>
+        <span class="s">'deposit_address_qr_code'</span><span class="p">:</span> <span class="s">'https://chart.googleapis.com/chart?cht=qr&amp;chl=bitcoin</span><span class="si">%3</span><span class="s">A1JbbREwe8Vb9DAVzB2zWtNYvKDYLyjyV3C&amp;choe=UTF-8&amp;chs=300x300'</span><span class="p">,</span>
+        <span class="s">'withdraw_address'</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'50'</span><span class="p">,</span>
+        <span class="s">'pending_balance'</span><span class="p">:</span> <span class="s">'623'</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</pre>
+
+<p>Returns details for a user.</p>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">GET https://www.arbiter.me/api/v1/user/&lt;USER ID&gt;</code></p>
+
+<h3 id="returns-a-user&#39;s-details">Returns a User&rsquo;s details</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique ID for this user. Save this ID with the user in your database.</td>
+</tr>
+<tr>
+<td>token</td>
+<td>string</td>
+<td>Access token used for authentication. Store this in your database with the user and keep it secret.</td>
+</tr>
+<tr>
+<td>is_verified</td>
+<td>boolean</td>
+<td>Whether or not the user has agreed to Arbiter&rsquo;s Terms of Service</td>
+</tr>
+<tr>
+<td>username</td>
+<td>string</td>
+<td>If the user has set their username. Defaults to <code class="prettyprint">anonymous</code></td>
+</tr>
+</tbody></table>
+
+<p><aside class='warning'>
+    Be sure to keep your users&#39; tokens secret. They are used for authentication and should be treated like a password.
+</aside></p>
+
+<h1 id="wallet-api">Wallet API</h1>
+
+<h2 id="wallet-details">Wallet details</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># id and token returned from the user/initialize or user/login call</span>
+<span class="c"># IMPORTANT: Keep your users' tokens private</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span>
+<span class="n">user_token</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">api_key</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">user_token</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">api_key</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/wallet/'</span> <span class="o">+</span> <span class="n">user_id</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s">'wallet'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'deposit_address'</span><span class="p">:</span> <span class="s">'1JbbREwe8Vb9DAVzB2zWtNYvKDYLyjyV3C'</span><span class="p">,</span>
+        <span class="s">'deposit_address_qr_code'</span><span class="p">:</span> <span class="s">'https://chart.googleapis.com/chart?cht=qr&amp;chl=bitcoin</span><span class="si">%3</span><span class="s">A1JbbREwe8Vb9DAVzB2zWtNYvKDYLyjyV3C&amp;choe=UTF-8&amp;chs=300x300'</span><span class="p">,</span>
+        <span class="s">'withdraw_address'</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'50'</span><span class="p">,</span>
+        <span class="s">'pending_balance'</span><span class="p">:</span> <span class="s">'623'</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">GET https://www.arbiter.me/api/v1/wallet/&lt;USER ID&gt;</code></p>
+
+<h3 id="returns-a-user&#39;s-wallet-details">Returns a user&rsquo;s Wallet details</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>balance</td>
+<td>integer</td>
+<td>The amount of Arbiter credits this user has available to bet with.</td>
+</tr>
+<tr>
+<td>pending_balance</td>
+<td>integer</td>
+<td>The amount of Arbiter credits that are currently pending confirmation.</td>
+</tr>
+<tr>
+<td>deposit_address</td>
+<td>string</td>
+<td>Bitcoin deposit address for the user to deposit bitcoin in exchance for Arbiter credits.</td>
+</tr>
+<tr>
+<td>deposit_address_qr_code</td>
+<td>url</td>
+<td>Image URL to a QR code for depositing Bitcoin.</td>
+</tr>
+<tr>
+<td>withdraw_address</td>
+<td>string</td>
+<td>If the user has cashed out to a Bitcoin address in the past, we include this value to autopopulate their cash out form</td>
+</tr>
+</tbody></table>
+
+<h2 id="deposit">Deposit</h2>
+
+<p>You have a few options to choose from for how you want to let your users deposit funds into their wallets. Once you have decided how you want your players to deposit funds, we have 3 different payment options to choose from</p>
+
+<h3 id="in-game-using-bitcoin">In game using Bitcoin</h3>
+
+<p>Once you have queried a user&rsquo;s wallet, display the <code class="prettyprint">wallet.deposit_address</code> or the <code class="prettyprint">wallet.deposit_address_qr_code</code> to the user. Then the user can use any Bitcoin wallet app to deposit Bitcoin to their address. We suggest either polling or including a refresh button for the user to trigger wallet queries after placing a deposit.</p>
+
+<p><aside>
+Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbase.com/charts">Coinbase&rsquo;s Exchange Rates</a>. We instantly accept $0.50 worth of Bitcoin into the user&rsquo;s wallet at time of deposit. The remaining deposit is moved into the user&rsquo;s <code class="prettyprint">pending_balance</code>. We wait for 2 confirmations from the Bitcoin network before moving the <code class="prettyprint">pending_balance</code> into the user&rsquo;s <code class="prettyprint">balance</code>.
+</aside></p>
+
+<h3 id="in-game-using-credit-card">In game using Credit Card</h3>
+
+<p>Documentation coming soon&hellip;</p>
+
+<h3 id="in-game-using-paypal">In game using PayPal</h3>
+
+<p>Documentation coming soon&hellip;</p>
+
+<h3 id="link-them-to-their-web-dashboard">Link them to their web dashboard</h3>
+
+<p>If you don&rsquo;t want to deal with implementing the Deposit API, you can link the user to their <a href="https://www.arbiter.me/dashboard/wallet/">Web Dashboard</a>. However, they will need to create account credentials using the [Claim Account API] in order to login in to their web dashboard.</p>
+
+<h2 id="cash-out">Cash Out</h2>
+
+<p>Docuementation coming soon&hellip;</p>
+
+<h1 id="tournament-api">Tournament API</h1>
+
+<p>Tournaments are the core class handling all the betting interactions between your players. All of your tournaments will follow this flow:</p>
+
+<ol>
+<li>Your server requests a  new <code class="prettyprint">Tournament</code> using the <a href="#create">Create API</a>.</li>
+<li>Users buy into the <code class="prettyprint">Tournament</code> using the <a href="#add-user">Add User API</a>.</li>
+<li>Your players play your game.</li>
+<li>Your server reports the winner of the game to the <a href="#report-score">Report Score API</a>.</li>
+<li>Arbiter will calculate the transactions fees and release the winnings.</li>
+</ol>
+
+<h2 id="create">Create</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># Token is returned from the user/initialize or user/login call</span>
+<span class="c"># IMPORTANT: Keep your users' tokens private. Treat these like passwords.</span>
+<span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="c"># Include the user_token requesting the jackpot</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament/create'</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'buy_in'</span><span class="p">:</span> <span class="mi">100</span>  <span class="c"># Bet size in Arbiter Credits</span>
+<span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="s">'jackpot'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+        <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'bettors'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">POST https://www.arbiter.me/api/v1/tournament/create</code></p>
+
+<h3 id="request-parameters">Request Parameters</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>buy_in</td>
+<td>integer</td>
+<td>The buy in (aka bet size or entry fee) in Arbiter credits for this tournament.</td>
+</tr>
+</tbody></table>
+
+<h3 id="returns-the-tournament&#39;s-state">Returns the tournament&rsquo;s state</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique identifier for this tournament.</td>
+</tr>
+<tr>
+<td>buy_in</td>
+<td>string</td>
+<td>The buy in (aka bet size) in Arbiter credits for this tournament.</td>
+</tr>
+<tr>
+<td>balance</td>
+<td>string</td>
+<td>The current balance of this tournament.</td>
+</tr>
+<tr>
+<td>users</td>
+<td>array</td>
+<td>The User IDs of users who have successfully placed a bought in to this tournament.</td>
+</tr>
+</tbody></table>
+
+<h2 id="details">Details</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># Token is returned from the user/initialize or user/login call</span>
+<span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="c"># Include the token of the User requesting the tournament</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournemant/&lt;TOURNAMENT_ID&gt;'</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="s">'tournament'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+        <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">GET https://www.arbiter.me/api/v1/tournament/&lt;TOURNAMENT_ID&gt;</code></p>
+
+<h3 id="returns-the-tournaments&#39;s-state">Returns the tournaments&rsquo;s state</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique identifier for this tournament.</td>
+</tr>
+<tr>
+<td>buy_in</td>
+<td>string</td>
+<td>The buy in (aka bet size) in Arbiter credits for this tournament.</td>
+</tr>
+<tr>
+<td>balance</td>
+<td>string</td>
+<td>The current balance of this tournament.</td>
+</tr>
+<tr>
+<td>bettors</td>
+<td>array</td>
+<td>The User IDs of users who have successfully placed a bet in this tournament.</td>
+</tr>
+</tbody></table>
+
+<h2 id="add-user">Add User</h2>
+
+<blockquote>
+<p>Before adding a user, create a tournament using the Tournament Create API and save the tournament&rsquo;s ID</p>
+</blockquote>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># The user's token is returned from the user/initialize or user/login call</span>
+<span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="c"># Include the user_token requesting the jackpot</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament/&lt;TOURNAMENT_ID&gt;/add-user/&lt;USER_ID&gt;'</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="s">'tournament'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+        <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'200'</span><span class="p">,</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p>Transfers the tournament&rsquo;s buy_in amount from the specified user&rsquo;s wallet to the specified tournament. If no errors occur, then the user will be added to the <code class="prettyprint">users</code> array and the <code class="prettyprint">tournament.balance</code> will be updated.</p>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">POST https://www.arbiter.me/api/v1/tournament/&lt;TOURNAMENT_ID&gt;/add-user/&lt;USER_ID&gt;</code></p>
+
+<h3 id="returns-the-jackpot-state">Returns the Jackpot State</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique identifier for this tournament.</td>
+</tr>
+<tr>
+<td>buy_in</td>
+<td>string</td>
+<td>The buy in (aka bet size) in Arbiter credits for this tournament.</td>
+</tr>
+<tr>
+<td>balance</td>
+<td>string</td>
+<td>The current balance of this tournament.</td>
+</tr>
+<tr>
+<td>users</td>
+<td>array</td>
+<td>The user IDs of users who have successfully placed a bought in to this tournament.</td>
+</tr>
+</tbody></table>
+
+<h2 id="report-score">Report Score</h2>
+
+<blockquote>
+<p>Before reporting a score, create a tournament using the Tournament Create API add users to the tournament using the Add User API</p>
+</blockquote>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># User tokens are returned in the user/initialize or user/login call</span>
+<span class="c"># IMPORTANT: Keep your users' tokens private</span>
+<span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="c"># Include the user_token requesting the tournament</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament/&lt;TOURNAMENT_ID&gt;/report-score/&lt;USER_ID&gt;'</span>
+<span class="n">payload</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">'score'</span><span class="p">:</span> <span class="s">'101'</span>
+<span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="c"># If all users have reported a score, the tournament will automatically payout</span>
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="s">'tournament'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+        <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'0'</span><span class="p">,</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p>Once a user has finished playing your game, report their score to Arbiter. Once all the users have reported their scores, Arbiter will compare the scores and set the winner to the user with the highest score. Once a winner has been set, Arbiter will automatically calculate the transaction fees and transfer the remainder of the tournament balance to the winning user&rsquo;s Arbiter wallet.</p>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">POST https://www.arbiter.me/api/v1/tournament/&lt;TOURNAMENT_ID&gt;/report-score/&lt;USER_ID&gt;</code></p>
+
+<h3 id="request-parameters">Request Parameters</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>score</td>
+<td>integer</td>
+<td>The score of the user for this tournament.</td>
+</tr>
+</tbody></table>
+
+<h3 id="returns-the-tournament&#39;s-state">Returns the tournament&rsquo;s State</h3>
+
+<table><thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique identifier for this tournament.</td>
+</tr>
+<tr>
+<td>buy_in</td>
+<td>string</td>
+<td>The buy in (aka bet size) in Arbiter credits for this tournament.</td>
+</tr>
+<tr>
+<td>balance</td>
+<td>string</td>
+<td>The current balance of this tournament. If all users have reported their score, this will be 0.</td>
+</tr>
+<tr>
+<td>users</td>
+<td>array</td>
+<td>The user IDs of users who have successfully bought in to this tournament.</td>
+</tr>
+</tbody></table>
+
+<h1 id="unity-sdk">Unity SDK</h1>
+
+<p><a href="https://github.com/andyzinsser/arbiter-ios-sdk-example">Download the SDK</a></p>
+
+<h2 id="initialize">Initialize</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Initialize</span><span class="p">(</span> <span class="n">GAME_API_KEY</span><span class="p">,</span> <span class="n">CallbackFunction</span> <span class="p">);</span>
+</pre>
+
+<h2 id="agree-to-terms-of-service">Agree to Terms of Service</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">VerifyUser</span><span class="p">();</span>
+</pre>
+
+<h2 id="query-user">Query User</h2>
+
+<h2 id="query-wallet">Query Wallet</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">QueryWallet</span><span class="p">();</span>
+</pre>
+
+<h2 id="deposit">Deposit</h2>
+
+<h2 id="request-jackpot">Request Jackpot</h2>
+
+<h2 id="place-bet">Place Bet</h2>
+
+<h2 id="report-score">Report Score</h2>
+
+<h2 id="query-jackpot">Query Jackpot</h2>
+
+<h2 id="cash-out">Cash Out</h2>
+
+      </div>
+      <div class="dark-box">
+          <div id="lang-selector">
+                <a href="#" data-language-name="python">python</a>
+                <a href="#" data-language-name="csharp">csharp</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>
