@@ -12,7 +12,7 @@ search: true
 ---
 
 
-# Overview
+# Getting Started
 
 ## Core Classes
 
@@ -67,9 +67,9 @@ Each Arbiter `User` is given an Arbiter `Wallet`. This request will occur direct
 Tournaments are the core class handling all the betting interactions between your players. Your server will create a new `Tournament` for each betting interaction between the players in your game. Once a `Tournament` has been created, your users will be able to buy in to the `Tournament`. After your users have finished battling it out in your game, your server will report who won. Arbiter will then charge a transacaction fee (some for us, and some for you) and then release the remaining funds in the `Tournament` to the winning user's Arbiter `Wallet`.
 
 
-## HTTP API Best Practices
+## RESTful
 
-The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built in HTTP features. As long as you are familiar with the HTTP features below, the API should behave straight forward.
+The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built in HTTP features. As long as you are familiar with the standard HTTP features, the API should behave straight forward.
 
 ## HTTP Status Codes
 
@@ -82,22 +82,6 @@ Code | Type | Description
 `401` | Unauthorized | Missing or invalid access token in your Authorization Header.
 `404` | Not Found | Incorrect url or ID in a url.
 `500` | Server Error | Something went wrong on our end. We get notified every single time you see this and are looking into what caused the problem.
-
-## HTTP Methods
-
-Our API relies on the built in HTTP verbs `GET` and `POST` for handling object detail requests versus object creates or updates.
-
-### GET
-
-Requesting existing resources.
-
-[HTTP Request Methods](http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods)
-
-### POST
-
-Performing resource updates and actions.
-
-[HTTP Request Methods](http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods)
 
 ## Response Objects
 
@@ -114,34 +98,54 @@ Performing resource updates and actions.
 
 All APIs return json with the following keys:
 
-Key | Type |  Description
+Field | Type |  Description
 ------- | ------- | -------
 success | Boolean | Whether or not the requested action was performed.
-OBJECT_NAME | dictionary | A dictionary containing the relavant object being queried or edited. This key will be the name of object type (ie: user, wallet, jackpot, etc).
+OBJECT_NAME | dictionary | A dictionary containing the relavant object being queried or edited. This key will be the name of object type (ie: user, wallet, tournament, etc).
 errors | array | An array of errors (if any errors occurred).
+
+Before digging into the details below, spend 2 minutes reading the [Core Classes](/?python#core-classes) section. It will get you familiar with the core classes you will be interacting with.
 
 ## Authentication
 
 ```python
-# Example of an request with Authorization Header
+# Example request with Authorization Header
 import requests
 
-# User tokens are included in Initialize and User Details API
 USER_TOKEN = '3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'
-# Game API Keys are available in your Developer Dashboard
 GAME_API_KEY = 'd6416b1e9be84c53b07524e37f94499d'
-
-headers = {'Authorization': 'Token ' + USER_TOKEN + '::' + GAME_API_KEY}
+headers = {
+    'Authorization': 'Token '+USER_TOKEN+'::'+GAME_API_KEY
+}
 r = requests.post('https://www.arbiter.me/api/v1/user/details', headers=headers)
 ```
 
-All requests are authenticated using the HTTP Authorization Header
+Authentication with Arbiter is two fold. Both your server and your users need the ability to make authenticated requests to Arbiter. To do so, all requests include both a game API key and a user token.
 
-[More on HTTP Headers](http://en.wikipedia.org/wiki/List_of_HTTP_header_fields)
+### Game API Key
 
-# Getting Started
+When you create a game using the [Game Configuration Form](#configure-your-game), an API key is generated for that game. This key is required for all requests to identify which game the requests are for.
 
-Before digging into the details below, spend 2 minutes reading the [Core Classes](/?python#core-classes) section. It will get you familiar with the core classes you will be interacting with.
+### Developer Access Token
+
+For request made between your server and Arbiter, your developer access token is required to authorize your access to the API. Your developer access token is available in your [Account Settings](https://www.arbiter.me/dashboard/settings/).
+
+### User Access Token
+
+The user token is used the same as your Developer Access Token except to authenticate your users' requests between their devices and the Arbiter server. User tokens are returned in the [User Initialize](#initialize) and [User Details](#details) responses. Once a user has been queried, save their token in their client for future requests.
+
+<aside class="warning">
+    If you decide to save user tokens in your database, be sure you are sending the tokens using SSL and encrypting your database fields.
+</aside>
+
+Once you have all your keys and tokens and are ready to make a request, you'll combine them into a single field in the Authorization Header of your requests.
+
+```python
+headers = {
+    'Authorization': 'Token <ACCESS_TOKEN>::<GAME_API_KEY>'
+}
+```
+The format of the header is 'Token `ACCESS_TOKEN`::`GAME_API_KEY`'. Depending on whether your server is making the request or if the request is coming from a user's client, the `ACCESS_TOKEN` should be either your `Developer Access Token` or the `USER ACCESS TOKEN`.
 
 ## Configure Your Game
 
@@ -192,7 +196,7 @@ Future requests made for this user require the `token` in the request headers. S
 
 ### Returned User Object
 
-Key | Type | Description
+Field | Type | Description
 ---- | ---- | ----
 id | string | Unique Arbiter ID for this user. Save this in your DB for requests involving this users
 token | string | Authentication token for this user. Save this in your DB and keep it private. This will be included in request headers in future requests to authenticate a request made on behalf of this user.
@@ -236,11 +240,11 @@ Before a user can participate in a wager, we need to confirm that the user is ov
 
 ### Returns
 
-Key | Type | Description
+Field | Type | Description
 ---- | ---- | ----
 success | boolean | Whether or not the user's account was successfully verified
 
-## User details
+## Details
 
 ```python
 import requests
@@ -288,7 +292,7 @@ Returns details for a user.
 
 ### Returns a User's details
 
-Key | Type | Description
+Field | Type | Description
 ---- | ---- | ----
 id | string | Unique ID for this user. Save this ID with the user in your database.
 token | string | Access token used for authentication. Store this in your database with the user and keep it secret.
@@ -340,7 +344,7 @@ r.json()
 
 ### Returns a user's Wallet details
 
-Key | Type | Description
+Field | Type | Description
 ---- | ---- | ----
 balance | integer | The amount of Arbiter credits this user has available to bet with.
 pending_balance | integer | The amount of Arbiter credits that are currently pending confirmation.
@@ -386,6 +390,11 @@ Tournaments are the core class handling all the betting interactions between you
 4. Your server reports the winner of the game to the <a href="#report-score">Report Score API</a>.
 5. Arbiter will calculate the transactions fees and release the winnings.
 
+<aside>
+    <strong>If your game has matchmaking enabled:</strong><br>
+    Be sure to read [Tournament Create With Matchmaking](#create-with-matchmaking)
+</aside>
+
 ## Create
 
 ```python
@@ -398,7 +407,7 @@ USER_TOKEN = '3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'
 # game API Key from your developer dashboard
 API_KEY = 'd6416b1e9be84c53b07524e37f94499d'
 
-# Include the user_token requesting the jackpot
+# Include the user_token requesting the tournament
 headers = {
     'Authorization': 'Token ' + USER_TOKEN + '::' + API_KEY
 }
@@ -411,11 +420,11 @@ r = requests.post(url, data=payload, headers=headers)
 r.json()
 {
     'success': True
-    'jackpot': {
+    'tournament': {
         'id': '7b62cac5dd164104955468ff80ee6d26'
         'buy_in': '100',
         'balance': '100',
-        'bettors': ['d8b50f95c8a24f24a7c64c9d3d5dde5f'],
+        'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f'],
     }
 }
 ```
@@ -426,18 +435,70 @@ r.json()
 
 ### Request Parameters
 
-Key | Type | Description
+Field | Type | Description
 --- | --- | ---
 buy_in | integer | The buy in (aka bet size or entry fee) in Arbiter credits for this tournament.
 
 ### Returns the tournament's state
 
-Key | Type | Description
+Field | Type | Description
 ---- | ---- | ----
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament.
 users | array | The User IDs of users who have successfully placed a bought in to this tournament.
+
+## Create with Matchmaking Enabled
+
+```python
+# Example success response from Create when matchmaking is enabled
+import requests
+headers = {...}
+payload = {...}
+r = requests.post('https://www.arbiter.me/api/v1/tournament/create', data=payload, headers=headers)
+
+print r.status_code
+# 200
+
+r.json()
+{
+    'success': True
+}
+```
+
+Matchmaking keeps the really good users from ruining new users' first game experiences. When matchmaking is enabled for your game, the [Tournament Create API](#create) may take a couple seconds to find an accurate match. Because of this delay, we return a success response for the request immediately then create the tournament in the background.
+
+After a client successfully requested a new tournament, the client should pull the [Tournament List API](#list) until a new tournament is returned.
+
+```python
+# Example list response when pulling
+import requests
+headers = {...}
+r = requests.get('https://www.arbiter.me/api/v1/tournament', headers=headers)
+
+r.json()
+{
+    'success': True,
+    'tournaments': [
+        {
+            'id': '7b62cac5dd164104955468ff80ee6d26'
+            'buy_in': '100',
+            'balance': '100',
+            'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f'],
+            'matched_users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf']
+        }
+    ]
+}
+```
+
+### Fields on Tournament with Matchmaking Enabled
+
+Field | Type | Description
+--- | --- | ---
+matched_users | array | User IDs of recently active users of similar skills.
+
+Use the IDs in `matched_users` to notify the corresponding user that they have been matched. In the notification, that user should have a *Buy-in to Tournament* prompt that triggers the [Add User API](#add-user) for that user.
+
 
 ## Details
 
@@ -454,8 +515,8 @@ API_KEY = 'd6416b1e9be84c53b07524e37f94499d'
 headers = {
     'Authorization': 'Token ' + USER_TOKEN + '::' + API_KEY
 }
-url = 'https://www.arbiter.me/api/v1/tournemant/<TOURNAMENT_ID>'
-r = requests.post(url, headers=headers)
+url = 'https://www.arbiter.me/api/v1/tournament/<TOURNAMENT_ID>'
+r = requests.get(url, headers=headers)
 
 r.json()
 {
@@ -475,12 +536,66 @@ r.json()
 
 ### Returns the tournaments's state
 
-Key | Type | Description
+Field | Type | Description
 ---- | ---- | ----
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament.
-bettors | array | The User IDs of users who have successfully placed a bet in this tournament.
+users | array | The User IDs of users who have successfully placed a bet in this tournament.
+
+## List
+
+```python
+import requests
+
+# Token is returned from the user/initialize or user/login call
+USER_TOKEN = '3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'
+
+# game API Key from your developer dashboard
+API_KEY = 'd6416b1e9be84c53b07524e37f94499d'
+
+# Include the token of the User requesting the tournament
+headers = {
+    'Authorization': 'Token ' + USER_TOKEN + '::' + API_KEY
+}
+
+url = 'https://www.arbiter.me/api/v1/tournament'
+r = requests.get(url, headers=headers)
+
+r.json()
+{
+    'success': True
+    'tournaments': [
+        {
+            'id': '7b62cac5dd164104955468ff80ee6d26'
+            'buy_in': '100',
+            'balance': '100',
+            'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f']
+        }
+    ]
+}
+```
+
+### Request URL
+
+`GET https://www.arbiter.me/api/v1/tournament`
+
+### Optional URL Params
+
+Param | Default | Description
+--- | --- | ---
+page | 1 | Depth of paginated results
+
+### Returns paginated list
+
+TODO: Replace these with the fields to returned in paginated serializer
+
+Field | Type | Description
+---- | ---- | ----
+id | string | Unique identifier for this tournament.
+buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
+balance | string | The current balance of this tournament.
+users | array | The User IDs of users who have successfully placed a bet in this tournament.
 
 ## Add User
 
@@ -495,7 +610,7 @@ USER_TOKEN = '3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'
 # game API Key from your developer dashboard
 API_KEY = 'd6416b1e9be84c53b07524e37f94499d'
 
-# Include the user_token requesting the jackpot
+# Include the user_token requesting the tournament
 headers = {
     'Authorization': 'Token ' + USER_TOKEN + '::' + API_KEY
 }
@@ -522,7 +637,7 @@ Transfers the tournament's buy_in amount from the specified user's wallet to the
 
 ### Returns the Jackpot State
 
-Key | Type | Description
+Field | Type | Description
 --- | --- | ---
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
@@ -574,18 +689,39 @@ Once a user has finished playing your game, report their score to Arbiter. Once 
 
 ### Request Parameters
 
-Key | Type | Description
+Field | Type | Description
 --- | --- | ---
 score | integer | The score of the user for this tournament.
 
 ### Returns the tournament's State
 
-Key | Type | Description
+Field | Type | Description
 --- | --- | ---
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament. If all users have reported their score, this will be 0.
 users | array | The user IDs of users who have successfully bought in to this tournament.
+
+# Matchmaking
+
+The Arbiter matchmaking service keeps the good players from ruining new players experiences. When you turn on matchmaking for your game, Arbiter will automatically find an accurate match for a user whenever they request a new Tournament.
+
+## Enable Matchmaking
+
+This is the easiest way to enable matchmaking in your game.
+
+1. Go to games tab in your [Developer Dashboard](https://www.arbiter.me/dashboard/games/)
+2. Click *edit* for the game you want to enable matchmaking on.
+3. Check the *Enable Matchmaking* box in the configuration form.
+4. Click *save*.
+
+Then whenever you make a call to the [Tournement Create API](#create), a new **matched_users** field will be included in the `Tournament` object from the [Tournament Details API](#details).
+
+Field | Type | Description
+---- | ---- | ----
+matched_users | array | An array of `user.id`'s that have been matched based on the users' skill.
+
+## Override in API
 
 # Unity SDK
 
