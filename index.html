@@ -33,7 +33,7 @@
     <div class="page-wrapper">
       <div class="dark-box"></div>
       <div class="content">
-        <h1 id="overview">Overview</h1>
+        <h1 id="getting-started">Getting Started</h1>
 
 <h2 id="core-classes">Core Classes</h2>
 
@@ -80,9 +80,9 @@
 
 <p>Tournaments are the core class handling all the betting interactions between your players. Your server will create a new <code class="prettyprint">Tournament</code> for each betting interaction between the players in your game. Once a <code class="prettyprint">Tournament</code> has been created, your users will be able to buy in to the <code class="prettyprint">Tournament</code>. After your users have finished battling it out in your game, your server will report who won. Arbiter will then charge a transacaction fee (some for us, and some for you) and then release the remaining funds in the <code class="prettyprint">Tournament</code> to the winning user&rsquo;s Arbiter <code class="prettyprint">Wallet</code>.</p>
 
-<h2 id="http-api-best-practices">HTTP API Best Practices</h2>
+<h2 id="restful">RESTful</h2>
 
-<p>The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built in HTTP features. As long as you are familiar with the HTTP features below, the API should behave straight forward.</p>
+<p>The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built in HTTP features. As long as you are familiar with the standard HTTP features, the API should behave straight forward.</p>
 
 <h2 id="http-status-codes">HTTP Status Codes</h2>
 
@@ -122,22 +122,6 @@
 </tr>
 </tbody></table>
 
-<h2 id="http-methods">HTTP Methods</h2>
-
-<p>Our API relies on the built in HTTP verbs <code class="prettyprint">GET</code> and <code class="prettyprint">POST</code> for handling object detail requests versus object creates or updates.</p>
-
-<h3 id="get">GET</h3>
-
-<p>Requesting existing resources.</p>
-
-<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
-
-<h3 id="post">POST</h3>
-
-<p>Performing resource updates and actions.</p>
-
-<p><a href="http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods">HTTP Request Methods</a></p>
-
 <h2 id="response-objects">Response Objects</h2>
 <pre class="highlight python"><span class="c"># Example response from https://www.arbiter.me/api/v1/wallet/</span>
 <span class="p">{</span>
@@ -153,7 +137,7 @@
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -166,7 +150,7 @@
 <tr>
 <td>OBJECT_NAME</td>
 <td>dictionary</td>
-<td>A dictionary containing the relavant object being queried or edited. This key will be the name of object type (ie: user, wallet, jackpot, etc).</td>
+<td>A dictionary containing the relavant object being queried or edited. This key will be the name of object type (ie: user, wallet, tournament, etc).</td>
 </tr>
 <tr>
 <td>errors</td>
@@ -175,26 +159,45 @@
 </tr>
 </tbody></table>
 
+<p>Before digging into the details below, spend 2 minutes reading the <a href="/?python#core-classes">Core Classes</a> section. It will get you familiar with the core classes you will be interacting with.</p>
+
 <h2 id="authentication">Authentication</h2>
-<pre class="highlight python"><span class="c"># Example of an request with Authorization Header</span>
+<pre class="highlight python"><span class="c"># Example request with Authorization Header</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 
-<span class="c"># User tokens are included in Initialize and User Details API</span>
 <span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
-<span class="c"># Game API Keys are available in your Developer Dashboard</span>
 <span class="n">GAME_API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
-
-<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">GAME_API_KEY</span><span class="p">}</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span><span class="o">+</span><span class="n">USER_TOKEN</span><span class="o">+</span><span class="s">'::'</span><span class="o">+</span><span class="n">GAME_API_KEY</span>
+<span class="p">}</span>
 <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'https://www.arbiter.me/api/v1/user/details'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
 </pre>
 
-<p>All requests are authenticated using the HTTP Authorization Header</p>
+<p>Authentication with Arbiter is two fold. Both your server and your users need the ability to make authenticated requests to Arbiter. To do so, all requests include both a game API key and a user token.</p>
 
-<p><a href="http://en.wikipedia.org/wiki/List_of_HTTP_header_fields">More on HTTP Headers</a></p>
+<h3 id="game-api-key">Game API Key</h3>
 
-<h1 id="getting-started">Getting Started</h1>
+<p>When you create a game using the <a href="#configure-your-game">Game Configuration Form</a>, an API key is generated for that game. This key is required for all requests to identify which game the requests are for.</p>
 
-<p>Before digging into the details below, spend 2 minutes reading the <a href="/?python#core-classes">Core Classes</a> section. It will get you familiar with the core classes you will be interacting with.</p>
+<h3 id="developer-access-token">Developer Access Token</h3>
+
+<p>For request made between your server and Arbiter, your developer access token is required to authorize your access to the API. Your developer access token is available in your <a href="https://www.arbiter.me/dashboard/settings/">Account Settings</a>.</p>
+
+<h3 id="user-access-token">User Access Token</h3>
+
+<p>The user token is used the same as your Developer Access Token except to authenticate your users&#39; requests between their devices and the Arbiter server. User tokens are returned in the <a href="#initialize">User Initialize</a> and <a href="#details">User Details</a> responses. Once a user has been queried, save their token in their client for future requests.</p>
+
+<p><aside class="warning">
+    If you decide to save user tokens in your database, be sure you are sending the tokens using SSL and encrypting your database fields.
+</aside></p>
+
+<p>Once you have all your keys and tokens and are ready to make a request, you&rsquo;ll combine them into a single field in the Authorization Header of your requests.</p>
+<pre class="highlight python"><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token &lt;ACCESS_TOKEN&gt;::&lt;GAME_API_KEY&gt;'</span>
+<span class="p">}</span>
+</pre>
+
+<p>The format of the header is &lsquo;Token <code class="prettyprint">ACCESS_TOKEN</code>::<code class="prettyprint">GAME_API_KEY</code>&rsquo;. Depending on whether your server is making the request or if the request is coming from a user&rsquo;s client, the <code class="prettyprint">ACCESS_TOKEN</code> should be either your <code class="prettyprint">Developer Access Token</code> or the <code class="prettyprint">USER ACCESS TOKEN</code>.</p>
 
 <h2 id="configure-your-game">Configure Your Game</h2>
 
@@ -259,7 +262,7 @@ In your dashboard, click the &lsquo;Register new game&rsquo; button in the games
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -327,7 +330,7 @@ In your dashboard, click the &lsquo;Register new game&rsquo; button in the games
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -339,7 +342,7 @@ In your dashboard, click the &lsquo;Register new game&rsquo; button in the games
 </tr>
 </tbody></table>
 
-<h2 id="user-details">User details</h2>
+<h2 id="details">Details</h2>
 <pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="c"># id and token returned from the user/initialize or user/login call</span>
@@ -387,7 +390,7 @@ In your dashboard, click the &lsquo;Register new game&rsquo; button in the games
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -459,7 +462,7 @@ In your dashboard, click the &lsquo;Register new game&rsquo; button in the games
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -531,6 +534,11 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <li>Arbiter will calculate the transactions fees and release the winnings.</li>
 </ol>
 
+<p><aside>
+    <strong>If your game has matchmaking enabled:</strong><br>
+    Be sure to read <a href="#create-with-matchmaking">Tournament Create With Matchmaking</a>
+</aside></p>
+
 <h2 id="create">Create</h2>
 <pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
 
@@ -541,7 +549,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <span class="c"># game API Key from your developer dashboard</span>
 <span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
 
-<span class="c"># Include the user_token requesting the jackpot</span>
+<span class="c"># Include the user_token requesting the tournament</span>
 <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
 <span class="p">}</span>
@@ -554,11 +562,11 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
-    <span class="s">'jackpot'</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">'tournament'</span><span class="p">:</span> <span class="p">{</span>
         <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
         <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
         <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
-        <span class="s">'bettors'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre>
@@ -571,7 +579,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -587,7 +595,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -614,6 +622,63 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 </tr>
 </tbody></table>
 
+<h2 id="create-with-matchmaking-enabled">Create with Matchmaking Enabled</h2>
+<pre class="highlight python"><span class="c"># Example success response from Create when matchmaking is enabled</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s">'https://www.arbiter.me/api/v1/tournament/create'</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span>
+<span class="c"># 200</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+<span class="p">}</span>
+</pre>
+
+<p>Matchmaking keeps the really good users from ruining new users&#39; first game experiences. When matchmaking is enabled for your game, the <a href="#create">Tournament Create API</a> may take a couple seconds to find an accurate match. Because of this delay, we return a success response for the request immediately then create the tournament in the background.</p>
+
+<p>After a client successfully requested a new tournament, the client should pull the <a href="#list">Tournament List API</a> until a new tournament is returned.</p>
+<pre class="highlight python"><span class="c"># Example list response when pulling</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'https://www.arbiter.me/api/v1/tournament'</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>
+    <span class="s">'tournaments'</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+            <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+            <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+            <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+            <span class="s">'matched_users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre>
+
+<h3 id="fields-on-tournament-with-matchmaking-enabled">Fields on Tournament with Matchmaking Enabled</h3>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>matched_users</td>
+<td>array</td>
+<td>User IDs of recently active users of similar skills.</td>
+</tr>
+</tbody></table>
+
+<p>Use the IDs in <code class="prettyprint">matched_users</code> to notify the corresponding user that they have been matched. In the notification, that user should have a <em>Buy-in to Tournament</em> prompt that triggers the <a href="#add-user">Add User API</a> for that user.</p>
+
 <h2 id="details">Details</h2>
 <pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
 
@@ -627,8 +692,8 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
 <span class="p">}</span>
-<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournemant/&lt;TOURNAMENT_ID&gt;'</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament/&lt;TOURNAMENT_ID&gt;'</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
 
 <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 <span class="p">{</span>
@@ -650,7 +715,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -671,7 +736,91 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <td>The current balance of this tournament.</td>
 </tr>
 <tr>
-<td>bettors</td>
+<td>users</td>
+<td>array</td>
+<td>The User IDs of users who have successfully placed a bet in this tournament.</td>
+</tr>
+</tbody></table>
+
+<h2 id="list">List</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="c"># Token is returned from the user/initialize or user/login call</span>
+<span class="n">USER_TOKEN</span> <span class="o">=</span> <span class="s">'3d2fcd21dcd22ae1d64b799c486a959aeee42fbb'</span>
+
+<span class="c"># game API Key from your developer dashboard</span>
+<span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
+
+<span class="c"># Include the token of the User requesting the tournament</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
+<span class="p">}</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament'</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="s">'tournaments'</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+            <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+            <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+            <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">]</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre>
+
+<h3 id="request-url">Request URL</h3>
+
+<p><code class="prettyprint">GET https://www.arbiter.me/api/v1/tournament</code></p>
+
+<h3 id="optional-url-params">Optional URL Params</h3>
+
+<table><thead>
+<tr>
+<th>Param</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>page</td>
+<td>1</td>
+<td>Depth of paginated results</td>
+</tr>
+</tbody></table>
+
+<h3 id="returns-paginated-list">Returns paginated list</h3>
+
+<p>TODO: Replace these with the fields to returned in paginated serializer</p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>id</td>
+<td>string</td>
+<td>Unique identifier for this tournament.</td>
+</tr>
+<tr>
+<td>buy_in</td>
+<td>string</td>
+<td>The buy in (aka bet size) in Arbiter credits for this tournament.</td>
+</tr>
+<tr>
+<td>balance</td>
+<td>string</td>
+<td>The current balance of this tournament.</td>
+</tr>
+<tr>
+<td>users</td>
 <td>array</td>
 <td>The User IDs of users who have successfully placed a bet in this tournament.</td>
 </tr>
@@ -690,7 +839,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <span class="c"># game API Key from your developer dashboard</span>
 <span class="n">API_KEY</span> <span class="o">=</span> <span class="s">'d6416b1e9be84c53b07524e37f94499d'</span>
 
-<span class="c"># Include the user_token requesting the jackpot</span>
+<span class="c"># Include the user_token requesting the tournament</span>
 <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">'Authorization'</span><span class="p">:</span> <span class="s">'Token '</span> <span class="o">+</span> <span class="n">USER_TOKEN</span> <span class="o">+</span> <span class="s">'::'</span> <span class="o">+</span> <span class="n">API_KEY</span>
 <span class="p">}</span>
@@ -719,7 +868,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -793,7 +942,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -809,7 +958,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <table><thead>
 <tr>
-<th>Key</th>
+<th>Field</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -835,6 +984,63 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <td>The user IDs of users who have successfully bought in to this tournament.</td>
 </tr>
 </tbody></table>
+
+<h1 id="matchmaking">Matchmaking</h1>
+
+<p>The Arbiter matchmaking service keeps the good players from ruining new players experiences. When you turn on matchmaking for your game, Arbiter will automatically find an accurate match for a user whenever they request a new Tournament.</p>
+
+<h2 id="enable-matchmaking">Enable Matchmaking</h2>
+
+<p>This is the easiest way to enable matchmaking in your game.</p>
+
+<ol>
+<li>Go to games tab in your <a href="https://www.arbiter.me/dashboard/games/">Developer Dashboard</a></li>
+<li>Click <em>edit</em> for the game you want to enable matchmaking on.</li>
+<li>Check the <em>Enable Matchmaking</em> box in the configuration form.</li>
+<li>Click <em>save</em>.</li>
+</ol>
+
+<p>Then whenever you make a call to the <a href="#create">Tournement Create API</a>, a new <strong>matched_users</strong> field will be included in the <code class="prettyprint">Tournament</code> object from the <a href="#details">Tournament Details API</a>.</p>
+
+<table><thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>matched_users</td>
+<td>array</td>
+<td>An array of <code class="prettyprint">user.id</code>&rsquo;s that have been matched based on the users&#39; skill.</td>
+</tr>
+</tbody></table>
+
+<h2 id="override-in-api">Override in API</h2>
+<pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+<span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+    <span class="s">'buy_in'</span><span class="p">:</span> <span class="mi">100</span>
+<span class="p">}</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament/create'</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+<span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="s">'success'</span><span class="p">:</span> <span class="bp">True</span>
+    <span class="s">'tournament'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
+        <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
+        <span class="s">'balance'</span><span class="p">:</span> <span class="s">'0'</span><span class="p">,</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s">'matched_users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p>There may be edge case scenarios where you do not want to use matchmaking for all tournaments in your game. For example, challenging a friend through Facebook. Even if matchmaking is enabled for a game, including a <code class="prettyprint">users</code> array in the <a href="#create">Tournament Create API</a> will disable matchmaking. The tournament will be created with the matched users equal to <code class="prettyprint">users</code> and return a new tournament back in the response.</p>
 
 <h1 id="unity-sdk">Unity SDK</h1>
 
