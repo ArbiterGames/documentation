@@ -723,6 +723,32 @@ matched_users | array | An array of `user.id`'s that have been matched based on 
 
 ## Override in API
 
+```python
+import requests
+
+headers = {...}
+payload = {
+    'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf'],
+    'buy_in': 100
+}
+url = 'https://www.arbiter.me/api/v1/tournament/create'
+r = requests.post(url, data=payload, headers=headers)
+
+r.json()
+{
+    'success': True
+    'tournament': {
+        'id': '7b62cac5dd164104955468ff80ee6d26'
+        'buy_in': '100',
+        'balance': '0',
+        'users': [],
+        'matched_users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf'],
+    }
+}
+```
+
+There may be edge case scenarios where you do not want to use matchmaking for all tournaments in your game. For example, challenging a friend through Facebook. Even if matchmaking is enabled for a game, including a `users` array in the [Tournament Create API](#create) will disable matchmaking. The tournament will be created with the matched users equal to `users` and return a new tournament back in the response.
+
 # Unity SDK
 
 [Download the SDK](https://github.com/andyzinsser/arbiter-ios-sdk-example)
