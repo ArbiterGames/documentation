@@ -16,7 +16,7 @@ search: true
 
 ## Core Classes
 
-Arbiter has 3 core classes that you will interact with as you develop your game. Before writing any code, spend 2 minutes getting familiar with these classes.
+Arbiter has 3 core classes that you will interact with as you develop your game. This 2-minute overview of the classes will help you understand what code you'll need to write!
 
 ### User
 
@@ -50,7 +50,7 @@ Your users' devices interact directly with our server. The first time a player's
 }
 ```
 
-Each Arbiter `User` is given an Arbiter `Wallet`. This request will occur directly between your players' device and the Arbiter server. The user can then deposit to this wallet using a Credit Card, PayPal, or with Bitcoin. At any point, a user can make a withdraw from their Arbiter Wallet back to any Debit Card, PayPal account, or Bitcoin address.
+Each Arbiter `User` is given an Arbiter `Wallet`. This request will occur directly between your players' device and the Arbiter server. The user can then deposit to this wallet using a Credit Card, PayPal, or with Bitcoin. At any point, a user can make a withdrawal from their Arbiter Wallet back to any Debit Card, PayPal account, or Bitcoin address.
 
 ### Tournament
 
@@ -69,7 +69,7 @@ Tournaments are the core class handling all the betting interactions between you
 
 ## RESTful
 
-The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built in HTTP features. As long as you are familiar with the standard HTTP features, the API should behave straight forward.
+The Arbiter API follows RESTful patterns, returns consistent JSON structures in every response, and relies on built-in HTTP features. As long as you are familiar with the standard HTTP features, the API should behave straight forward.
 
 ## HTTP Status Codes
 
