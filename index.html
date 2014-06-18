@@ -74,7 +74,7 @@
     <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
     <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
     <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
-    <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+    <span class="s">'users'</span><span class="p">:</span> <span class="p">[{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}],</span>
 <span class="p">}</span>
 </pre>
 
@@ -566,7 +566,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
         <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
         <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
         <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
-        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}],</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre>
@@ -618,7 +618,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <tr>
 <td>users</td>
 <td>array</td>
-<td>The User IDs of users who have successfully placed a bought in to this tournament.</td>
+<td>Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user&rsquo;s ID and the score reported by your server for each user in this tournament.</td>
 </tr>
 </tbody></table>
 
@@ -654,7 +654,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
             <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
             <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
             <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
-            <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">],</span>
+            <span class="s">'users'</span><span class="p">:</span> <span class="p">[{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}],</span>
             <span class="s">'matched_users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">]</span>
         <span class="p">}</span>
     <span class="p">]</span>
@@ -702,7 +702,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
         <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
         <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
         <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
-        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">]</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}]</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre>
@@ -738,7 +738,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <tr>
 <td>users</td>
 <td>array</td>
-<td>The User IDs of users who have successfully placed a bet in this tournament.</td>
+<td>Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user&rsquo;s ID and the score reported by your server for each user in this tournament.</td>
 </tr>
 </tbody></table>
 
@@ -767,7 +767,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
             <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
             <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
             <span class="s">'balance'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
-            <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">]</span>
+            <span class="s">'users'</span><span class="p">:</span> <span class="p">[{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}]</span>
         <span class="p">}</span>
     <span class="p">]</span>
 <span class="p">}</span>
@@ -822,7 +822,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <tr>
 <td>users</td>
 <td>array</td>
-<td>The User IDs of users who have successfully placed a bet in this tournament.</td>
+<td>Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user&rsquo;s ID and the score reported by your server for each user in this tournament.</td>
 </tr>
 </tbody></table>
 
@@ -853,7 +853,10 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
         <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
         <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
         <span class="s">'balance'</span><span class="p">:</span> <span class="s">'200'</span><span class="p">,</span>
-        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">},</span>
+            <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+        <span class="p">]</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre>
@@ -891,7 +894,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <tr>
 <td>users</td>
 <td>array</td>
-<td>The user IDs of users who have successfully placed a bought in to this tournament.</td>
+<td>Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user&rsquo;s ID and the score reported by your server for each user in this tournament.</td>
 </tr>
 </tbody></table>
 
@@ -927,7 +930,10 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
         <span class="s">'id'</span><span class="p">:</span> <span class="s">'7b62cac5dd164104955468ff80ee6d26'</span>
         <span class="s">'buy_in'</span><span class="p">:</span> <span class="s">'100'</span><span class="p">,</span>
         <span class="s">'balance'</span><span class="p">:</span> <span class="s">'0'</span><span class="p">,</span>
-        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+        <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="s">'101'</span><span class="p">},</span>
+            <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+        <span class="p">]</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre>
@@ -981,7 +987,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <tr>
 <td>users</td>
 <td>array</td>
-<td>The user IDs of users who have successfully bought in to this tournament.</td>
+<td>Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user&rsquo;s ID and the score reported by your server for each user in this tournament.</td>
 </tr>
 </tbody></table>
 
@@ -1021,7 +1027,10 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
 <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span><span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">],</span>
+    <span class="s">'users'</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'d8b50f95c8a24f24a7c64c9d3d5dde5f'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'id'</span><span class="p">:</span> <span class="s">'efc4654a2b9844589a8d77d09628afbf'</span><span class="p">,</span> <span class="s">'score'</span><span class="p">:</span> <span class="bp">None</span><span class="p">}</span>
+    <span class="p">],</span>
     <span class="s">'buy_in'</span><span class="p">:</span> <span class="mi">100</span>
 <span class="p">}</span>
 <span class="n">url</span> <span class="o">=</span> <span class="s">'https://www.arbiter.me/api/v1/tournament/create'</span>
