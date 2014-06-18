@@ -60,7 +60,7 @@ Each Arbiter `User` is given an Arbiter `Wallet`. This request will occur direct
     'id': '7b62cac5dd164104955468ff80ee6d26'
     'buy_in': '100',
     'balance': '100',
-    'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f'],
+    'users': [{'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None}],
 }
 ```
 
@@ -424,7 +424,7 @@ r.json()
         'id': '7b62cac5dd164104955468ff80ee6d26'
         'buy_in': '100',
         'balance': '100',
-        'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f'],
+        'users': [{'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None}],
     }
 }
 ```
@@ -446,7 +446,7 @@ Field | Type | Description
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament.
-users | array | The User IDs of users who have successfully placed a bought in to this tournament.
+users | array | Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user's ID and the score reported by your server for each user in this tournament.
 
 ## Create with Matchmaking Enabled
 
@@ -484,7 +484,7 @@ r.json()
             'id': '7b62cac5dd164104955468ff80ee6d26'
             'buy_in': '100',
             'balance': '100',
-            'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f'],
+            'users': [{'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None}],
             'matched_users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf']
         }
     ]
@@ -525,7 +525,7 @@ r.json()
         'id': '7b62cac5dd164104955468ff80ee6d26'
         'buy_in': '100',
         'balance': '100',
-        'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f']
+        'users': [{'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None}]
     }
 }
 ```
@@ -541,7 +541,7 @@ Field | Type | Description
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament.
-users | array | The User IDs of users who have successfully placed a bet in this tournament.
+users | array | Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user's ID and the score reported by your server for each user in this tournament.
 
 ## List
 
@@ -570,7 +570,7 @@ r.json()
             'id': '7b62cac5dd164104955468ff80ee6d26'
             'buy_in': '100',
             'balance': '100',
-            'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f']
+            'users': [{'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None}]
         }
     ]
 }
@@ -595,7 +595,7 @@ Field | Type | Description
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament.
-users | array | The User IDs of users who have successfully placed a bet in this tournament.
+users | array | Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user's ID and the score reported by your server for each user in this tournament.
 
 ## Add User
 
@@ -624,7 +624,10 @@ r.json()
         'id': '7b62cac5dd164104955468ff80ee6d26'
         'buy_in': '100',
         'balance': '200',
-        'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf'],
+        'users': [
+            {'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None},
+            {'id': 'efc4654a2b9844589a8d77d09628afbf', 'score': None}
+        ]
     }
 }
 ```
@@ -642,7 +645,7 @@ Field | Type | Description
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament.
-users | array | The user IDs of users who have successfully placed a bought in to this tournament.
+users | array | Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user's ID and the score reported by your server for each user in this tournament.
 
 ## Report Score
 
@@ -676,7 +679,10 @@ r.json()
         'id': '7b62cac5dd164104955468ff80ee6d26'
         'buy_in': '100',
         'balance': '0',
-        'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf'],
+        'users': [
+            {'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': '101'},
+            {'id': 'efc4654a2b9844589a8d77d09628afbf', 'score': None}
+        ]
     }
 }
 ```
@@ -700,7 +706,7 @@ Field | Type | Description
 id | string | Unique identifier for this tournament.
 buy_in | string | The buy in (aka bet size) in Arbiter credits for this tournament.
 balance | string | The current balance of this tournament. If all users have reported their score, this will be 0.
-users | array | The user IDs of users who have successfully bought in to this tournament.
+users | array | Array of dictionaries of each user that has successfully bought in to this tournament. Each dictionary has the user's ID and the score reported by your server for each user in this tournament.
 
 # Matchmaking
 
@@ -728,7 +734,10 @@ import requests
 
 headers = {...}
 payload = {
-    'users': ['d8b50f95c8a24f24a7c64c9d3d5dde5f', 'efc4654a2b9844589a8d77d09628afbf'],
+    'users': [
+        {'id': 'd8b50f95c8a24f24a7c64c9d3d5dde5f', 'score': None},
+        {'id': 'efc4654a2b9844589a8d77d09628afbf', 'score': None}
+    ],
     'buy_in': 100
 }
 url = 'https://www.arbiter.me/api/v1/tournament/create'
