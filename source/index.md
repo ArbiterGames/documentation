@@ -34,11 +34,6 @@ Arbiter has 3 core classes that you will interact with as you develop your game.
 Your users' devices interact directly with our server. The first time a player's device connects with Arbiter, we create an anonymous `User` and return a unique ID for that user. This ID is what you will use to make requests on that user's behalf in the future from your server. By default, all users are playing anonymously. At any point, they can create login credentials for their account to log back in with those credentials using our Login API.
 
 
-<aside>
-    <strong>Who owns the user?</strong><br>
-    You still own your user. The first time a user loads your game with Arbiter installed, we return a unique ID and token for you to store in your user database. All future authentication between Arbiter and your user can be completed using this ID and token.
-</aside>
-
 ### Wallet
 
 ```python
@@ -65,6 +60,11 @@ Each Arbiter `User` is given an Arbiter `Wallet`. This request will occur direct
 ```
 
 Tournaments are the core class handling all the betting interactions between your players. Your server will create a new `Tournament` for each betting interaction between the players in your game. Once a `Tournament` has been created, your users will be able to buy in to the `Tournament`. After your users have finished battling it out in your game, your server will report who won. Arbiter will then charge a transacaction fee (some for us, and some for you) and then release the remaining funds in the `Tournament` to the winning user's Arbiter `Wallet`.
+
+
+## No backend required
+
+Arbiter is flexible enough to work with multiple patterns
 
 
 ## RESTful
@@ -305,7 +305,7 @@ username | string | If the user has set their username. Defaults to `anonymous`
 
 # Wallet API
 
-## Wallet details
+## Details
 
 ```python
 import requests
@@ -758,34 +758,161 @@ r.json()
 
 There may be edge case scenarios where you do not want to use matchmaking for all tournaments in your game. For example, challenging a friend through Facebook. Even if matchmaking is enabled for a game, including a `users` array in the [Tournament Create API](#create) will disable matchmaking. The tournament will be created with the matched users equal to `users` and return a new tournament back in the response.
 
-# Unity SDK
+# Unity iOS SDK
 
-[Download the SDK](https://github.com/andyzinsser/arbiter-ios-sdk-example)
+We have a Unity SDK for speeding up the integration when building a game in Unity for iOS. This package wraps all the API interaction into a single Arbiter class.
 
-## Initialize
+## SDK Flow Overview
+
+Below is an outline of the typical flow a user should be taken through when playing an Arbiter enabled game followed by detailed descriptions and code examples of each step. Don't hesitate to message us if you have any questions or issues. [support@arbiter.me](mailto:support@arbiter.me)
+
+### Implementation Prerequisites
+
+Complete these steps before writing any code.
+
+1. [Configure your game](#configure-your-game) in your developer dashboard.
+1. [Download the Unity Package](https://github.com/ArbiterGames/Unity-SDK).
+1. Import the package into your Unity game.
+1. Add the Arbiter Prefab located in `/Assets/Plugins/Arbiter` to your loading scene.
+1. Set your game's API key and your developer access token in the Arbiter Game Object's inspector.
+
+### Standard flow for your users
+
+Each step below is done with a call to the Arbiter SDK.
+
+1. Authenticate a user session.
+1. Verify the user's age and location (*if this is a new session*).
+1. Display the user's wallet details.
+1. Prompt the user to deposit Arbiter credits.
+1. Have the user join a tournament.
+1. Report the user's score for that tournament.
+1. View previous tournament results.
+1. Let the user withdraw their credits when they are done.
+1. Logout
+
+### Quick and Easy Implementation
+
+The SDK includes iOS UIAlertViews for all the Arbiter UI elements (wallet dashboard screen, previous tournaments, deposits / withdraws, etc). This is the quickest way to integrate Arbiter into your game. Once you have added the Arbiter Game Object to your game, you can start making calls to the SDK and iOS UIAlertViews will automatically be displayed to the user with all the available user inputs in the UIAlertView.
+
+### Customized UI Implementation
+
+The alternative implementation is for you to create your own custom UI elements that matches your game's look and feel. As you build out your UI elements, you can bind your buttons directly to the Arbiter SDK methods instead of relying on the pre-built UIAlertView inputs.
+
+
+## Authenticate with Game Center
 
 ```csharp
-Arbiter.Initialize( GAME_API_KEY, CallbackFunction );
+using UnityEngine;
+using System;
+using System.Collections;
+using UnityEngine.SocialPlatforms;
+
+public class Entrypoint : MonoBehaviour {
+
+    void Start () {
+#if UNITY_IOS
+        Action<bool> processAuth = ( success ) => {
+            if( success ) {
+                Arbiter.LoginWithGameCenter( Callback );
+            } else {
+                Debug.LogError( "Could not authenticate to Game Center!" );
+            }
+        };
+        Social.localUser.Authenticate( processAuth );
+#endif
+    }
+
+    void Callback() {
+        Debug.Log( "Hello, " + Arbiter.Username + "!" );
+    }
+}
 ```
 
-## Agree to Terms of Service
+If your game is setup to integrate with Game Center, a user can link their Arbiter account with a Game Center account. To link with a Game Center account, use Unity's [Social API](http://docs.unity3d.com/ScriptReference/Social.html) to get a Game Center [LocalUser](http://docs.unity3d.com/ScriptReference/Social-localUser.html). Once a LocalUser has been created, call `Arbiter.LoginWithGameCenter()` to link their Game Center account with Arbiter. Once their Arbiter account has been linked to a Game Center account, they can use their Game Center credentials to establish a new session with their existing Arbiter Wallet in other Arbiter enabled games as well as on other devices.
+
+## Authenticate with a Token
+
+A `token` is included in the User GET call. If you have your own backend that you are saving your users in, you can save this token with you other user profile info. Then whenever the user authenticates with your server, send the token from your database to the client. Then use the `Login` call to establish a new session between the user's device and the Arbiter server.
+
+## Authenticate with Username / Password
 
 ```csharp
-Arbiter.VerifyUser();
+Arbiter.Login( Callback );
 ```
 
-## Query User
+If a user has already created an account through the [Web Registration](https://www.arbiter.me/player-registration) or through the `claim_account_url`, they can re-establish an existing session using the `Arbiter.Login()`. This call will display a UIAlertView with an username and password field. Once the user enters their Arbiter username and password, the user and wallet objects will get returned in the response.
 
-## Query Wallet
+## Verify The User
 
 ```csharp
-Arbiter.QueryWallet();
+Arbiter.VerifyUser( Callback );
 ```
 
-## Deposit
-## Request Jackpot
-## Place Bet
+Whenever a new user is created, in addition to having the user agree to the standard terms and conditions, we need to make sure there are no local regulations restricting online skill based betting.
+
+**This method will:**
+
+1. Prompt the user to enable location services (if not already enabled).
+2. Prompt the user to agree to the [Terms and Conditions](https://www.arbiter.me/terms).
+3. Send the user's postal code to the Arbiter server to check the legality of online betting in their location.
+
+## Wallet Details
+
+```csharp
+Arbiter.QueryWallet()
+```
+Once the user has been verified, you can get their wallet details at anytime using `GetWallet()`. This will return a dictionary of the user's wallet details. You can also call `DisplayWalletDetailsSceen()` to display the Wallet Dashboard in a native UIAlertView.
+
+## Deposit Credits
+
+Before a user can start betting, they will need Arbiter credits. Arbiter credits are the betting currency that users will use to bet in your game. Feel free to call them credits, cents, gold, gems, or whatever makes sense for your game.
+
+`1 Arbiter credit = $0.01 USD`
+
+## Join a Tournament
+
+Now that the user has credits to bet with, they can request to join tournaments. If there are no current tournaments for the user to join, a new tournament will get created. Once the new tournament has been created on the server and is available on the device, load the actually game play scene for the user.
+
+<aside class="important">
+    **Once a user has requested a tournament, the `bet_size` amount of credits will automatically get transferred from the user's wallet to the tournament pot**.
+</aside>
+
+### Using Tournament Filters
+
+```csharp
+string betSize = "100";
+Dictionary<string,string> filters = new Dictionary<string,string>();
+filters.Add( "arbitrary_key", "the_value" );
+Arbiter.GetTournament( betSize, filters, Callback );
+```
+
+You can pass in a `filters` dictionary to sort tournaments into different groups. For example, if you want to create a tournament where the users are competing on level 2 of your game, you can set the filters to `{"level": "2"}`. This will make sure that when a user playing level 2 requests a tournament, they will only get matched with other users requesting a tournament for level 2 (rather than level 1 or 3). `level` is just an arbitrary example, this can be set to any string.
+
 ## Report Score
-## Query Jackpot
-## Cash Out
 
+```csharp
+score = (int)UnityEngine.Random.Range( 1f, 100f );
+Arbiter.ReportScore( TournamentId, score, Callback );
+```
+
+After the user has successfully played the game and has generated a numeric score, send the score to the Arbiter server. Once all users in this tournament have reported their scores to the Arbiter server, we will determine the winner based on which user reported the highest score and distribute the credits to the winner's wallet.
+
+## Tournament Results
+
+This will display a paginated list of the results from previous tournaments the current user has participated in.
+
+## Withdraw
+
+Once the user is ready convert their Arbiter credits back to USD, call this method to display the withdraw dialog.
+
+<aside class="important">
+    Withdraws can only be made to debit or bank cards. Our payment processor is unable to approve withdraws made to credit cards.
+</aside>
+
+## Logout
+
+```csharp
+Arbiter.Logout( Callback );
+```
+
+This call will delete all the Arbiter objects (`user`, `wallet`, `tournaments`) from memory and destroy the current session.

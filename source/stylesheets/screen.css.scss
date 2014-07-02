@@ -250,10 +250,29 @@ html, body {
 ////////////////////////////////////////////////////////////////////////////////
 // This is all the stuff with the light background in the left half of the page
 
+#toggle_code {
+  position: fixed;
+  top: 0px;
+  right: 5px;
+  padding:10px;
+  color:transparent;
+  z-index:100;
+
+  &:after {
+    color: $main-text;
+    @extend %icon-remove-sign;
+  }
+
+  &.code-visible:after {
+    color: $nav-text;
+  }
+}
+
 .content {
   // to place content above the dark box
   position: relative;
   z-index: 30;
+
 
   &, section {
     padding-bottom: 6em;

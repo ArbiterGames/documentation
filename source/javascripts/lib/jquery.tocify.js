@@ -724,10 +724,10 @@
 
                             if(window.location.hash !== "#" + anchorText) {
 
-                                if(history.replaceState) { 
+                                if(history.replaceState) {
                                     history.replaceState({}, "", "#" + anchorText);
                                 // provide a fallback
-                                } else { 
+                                } else {
                                     scrollV = document.body.scrollTop;
                                     scrollH = document.body.scrollLeft;
                                     location.hash = "#" + anchorText;
