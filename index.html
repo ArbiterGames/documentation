@@ -1095,13 +1095,109 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <p>The alternative implementation is for you to create your own custom UI elements that matches your game&rsquo;s look and feel. As you build out your UI elements, you can bind your buttons directly to the Arbiter SDK methods instead of relying on the pre-built UIAlertView inputs.</p>
 
-<h2 id="authenticate-with-game-center">Authenticate with Game Center</h2>
-<pre class="highlight csharp"><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
-<span class="k">using</span> <span class="nn">UnityEngine.SocialPlatforms</span><span class="p">;</span>
+<h2 id="the-arbiter-game-object">The Arbiter Game Object</h2>
 
-<span class="k">public</span> <span class="k">class</span> <span class="nc">Entrypoint</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+<p>Once the Arbiter Game Object has been added to your loading scene, you will have access to the Arbiter Class. This class contains all the properties and methods that you will interact with throughout the implementation.</p>
+
+<h3 id="properties">Properties</h3>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>UserId</td>
+<td><code class="prettyprint">string</code></td>
+<td>The user&rsquo;s unique identifier for Arbiter.</td>
+</tr>
+<tr>
+<td>Username</td>
+<td><code class="prettyprint">string</code></td>
+<td>The username or email associated with the current Arbiter account.</td>
+</tr>
+<tr>
+<td>Verified</td>
+<td><code class="prettyprint">bool</code></td>
+<td>Whether or not the user has agreed to the <a href="https://www.arbiter.me/terms/">Terms and Conditions</a></td>
+</tr>
+<tr>
+<td>Balance</td>
+<td><code class="prettyprint">string</code></td>
+<td>The currently available Arbiter credits for this user to bet with.</td>
+</tr>
+<tr>
+<td>PendingBalance</td>
+<td><code class="prettyprint">string</code></td>
+<td>Any pending Arbiter credits in the user&rsquo;s wallet.</td>
+</tr>
+<tr>
+<td>DepositAddress</td>
+<td><code class="prettyprint">string</code></td>
+<td>Bitcoin address for purchasing Arbiter credits with Bitcoin</td>
+</tr>
+<tr>
+<td>DepositQrCode</td>
+<td><code class="prettyprint">string</code></td>
+<td>URL to a QR code for purchasing Arbiter credits with Bitcoin</td>
+</tr>
+<tr>
+<td>WithdrawAddress</td>
+<td><code class="prettyprint">string</code></td>
+<td>If the user has withdrawn Arbiter credits to a Bitcoin address, this field have their most recently used withdraw address.</td>
+</tr>
+</tbody></table>
+
+<h3 id="methods">Methods</h3>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>Initialize</td>
+<td>Establishes a new anonymous session between the user&rsquo;s device and the Arbiter server.</td>
+</tr>
+<tr>
+<td>Login</td>
+<td>Displays a native UIAlertView for a user to login to an existing Arbiter account.</td>
+</tr>
+<tr>
+<td>LoginWithGameCenter</td>
+<td>If the user has already logged into your game using Apple&rsquo;s Game Center, this will link the Game Center user with an Arbiter account.</td>
+</tr>
+<tr>
+<td>Logout</td>
+<td>Destroys the current Arbiter session.</td>
+</tr>
+<tr>
+<td>VerifyUser</td>
+<td>Prompts the user to agree to the <a href="https://www.arbiter.me/terms/">Terms and Conditions</a> and verifies that your game is legal to bet on in their local jurisdiction.</td>
+</tr>
+<tr>
+<td>GetWallet</td>
+<td>Updates <code class="prettyprint">Arbiter.Balance</code> and <code class="prettyprint">Arbiter.PendingBalance</code>.</td>
+</tr>
+<tr>
+<td>DisplayWalletDashboard</td>
+<td>Updates Arbiter.Wallet then displays the wallet details in a native UIAlertView along with user inputs such as Deposit and Withdraw.</td>
+</tr>
+<tr>
+<td>JoinTournament</td>
+<td>Enters the user in a new tournament.</td>
+</tr>
+<tr>
+<td>ReportScore</td>
+<td>Reports the outcome of a tournament for the current user.</td>
+</tr>
+</tbody></table>
+
+<h2 id="authenticate-with-game-center">Authenticate with Game Center</h2>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">AnyScriptPriorToBetting</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
 
     <span class="k">void</span> <span class="nf">Start</span> <span class="p">()</span> <span class="p">{</span>
 <span class="cp">#if UNITY_IOS
@@ -1124,18 +1220,54 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <p>If your game is setup to integrate with Game Center, a user can link their Arbiter account with a Game Center account. To link with a Game Center account, use Unity&rsquo;s <a href="http://docs.unity3d.com/ScriptReference/Social.html">Social API</a> to get a Game Center <a href="http://docs.unity3d.com/ScriptReference/Social-localUser.html">LocalUser</a>. Once a LocalUser has been created, call <code class="prettyprint">Arbiter.LoginWithGameCenter()</code> to link their Game Center account with Arbiter. Once their Arbiter account has been linked to a Game Center account, they can use their Game Center credentials to establish a new session with their existing Arbiter Wallet in other Arbiter enabled games as well as on other devices.</p>
 
-<h2 id="authenticate-with-a-token">Authenticate with a Token</h2>
+<h2 id="custom-authentication">Custom Authentication</h2>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">Entrypoint</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
 
-<p>A <code class="prettyprint">token</code> is included in the User GET call. If you have your own backend that you are saving your users in, you can save this token with you other user profile info. Then whenever the user authenticates with your server, send the token from your database to the client. Then use the <code class="prettyprint">Login</code> call to establish a new session between the user&rsquo;s device and the Arbiter server.</p>
+    <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">accessToken</span> <span class="p">=</span> <span class="n">TOKEN_FROM_YOUR_DATABASE_FROM_PREVIOUS_SESSION</span><span class="p">;</span>
 
-<h2 id="authenticate-with-username-/-password">Authenticate with Username / Password</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Login</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
+    <span class="k">void</span> <span class="nf">Start</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">SetUserAccessToken</span><span class="p">(</span> <span class="n">accessToken</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre>
 
-<p>If a user has already created an account through the <a href="https://www.arbiter.me/player-registration">Web Registration</a> or through the <code class="prettyprint">claim_account_url</code>, they can re-establish an existing session using the <code class="prettyprint">Arbiter.Login()</code>. This call will display a UIAlertView with an username and password field. Once the user enters their Arbiter username and password, the user and wallet objects will get returned in the response.</p>
+<p>If you already have authentication setup for your users within your game, they do not need to create an additional account on Arbiter. The first time a user loads your game, call <code class="prettyprint">Arbiter.Initialize()</code> to create a new session on Arbiter. This will set <code class="prettyprint">Arbiter.UserAccessToken</code> to a unique string that can be used for authenticated requests on behalf of this user. Save that token with your user in your database. Then, whenever one of your users re-loads your game, call <code class="prettyprint">Arbiter.SetUserAccessToken( userAccessToken )</code> to re-establish a session with the correct Arbiter account for that user.</p>
+
+<p><aside class="warning">
+    <strong>Keep your users&#39; access tokens private</strong><br>
+    Be sure that you are only sending the tokens over https and that you are storing them encypted in your database. Getting access to a user&rsquo;s token is equivalent to getting access to their username and password.
+</aside></p>
+
+<h2 id="authenticate-with-username-/-password">Authenticate with Username / Password</h2>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">LoginButton</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">void</span> <span class="nf">OnMouseUpAsButton</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">Login</span><span class="p">(</span>  <span class="n">Callback</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p>If a user has already created an account through the <a href="https://www.arbiter.me/player-registration">Web Registration</a> or through the <code class="prettyprint">claim_account_url</code>, they can re-establish an existing session using the <code class="prettyprint">Arbiter.Login()</code>. This call will display a UIAlertView with an email and password field. Upon successful login, <code class="prettyprint">Arbiter.UserId</code> and <code class="prettyprint">Arbiter.Balance</code> will have the correct values.</p>
 
 <h2 id="verify-the-user">Verify The User</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">VerifyUser</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">AnyScriptPriorToBetting</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">void</span> <span class="nf">VerificationStep</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">VerifyUser</span><span class="p">(</span>  <span class="n">Callback</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">" is now verified: "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Verified</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre>
 
 <p>Whenever a new user is created, in addition to having the user agree to the standard terms and conditions, we need to make sure there are no local regulations restricting online skill based betting.</p>
@@ -1148,11 +1280,33 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <li>Send the user&rsquo;s postal code to the Arbiter server to check the legality of online betting in their location.</li>
 </ol>
 
-<h2 id="wallet-details">Wallet Details</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">QueryWallet</span><span class="p">()</span>
+<h2 id="get-wallet">Get Wallet</h2>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">SetupWalletHandlerScript</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">void</span> <span class="nf">Start</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">AddWalletListener</span><span class="p">(</span>  <span class="n">UpdateWalletUIElements</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">UpdateWalletUIElements</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Balance: "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Balance</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">ExampleOfRemovingWalletListener</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">RemoveWalletListener</span><span class="p">(</span> <span class="n">UpdateWalletUIElements</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">RefreshWalletButton</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">void</span> <span class="nf">OnMouseUpAsButton</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">GetWallet</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre>
 
-<p>Once the user has been verified, you can get their wallet details at anytime using <code class="prettyprint">GetWallet()</code>. This will return a dictionary of the user&rsquo;s wallet details. You can also call <code class="prettyprint">DisplayWalletDetailsSceen()</code> to display the Wallet Dashboard in a native UIAlertView.</p>
+<p>Before getting a wallet for the first time, you can setup wallet listeners. This way, whenever the wallet is updated, you can bind your own handlers for updating you UI elements and such.</p>
+
+<p>Calling <code class="prettyprint">Arbiter.GetWallet()</code> will request the latest wallet detials from the server and then setup automatic polling at incrementing intervals. Anytime you call <code class="prettyprint">Arbiter.GetWallet()</code> the polling intervals will reset the inrements.</p>
 
 <h2 id="deposit-credits">Deposit Credits</h2>
 
@@ -1165,7 +1319,7 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <p>Now that the user has credits to bet with, they can request to join tournaments. If there are no current tournaments for the user to join, a new tournament will get created. Once the new tournament has been created on the server and is available on the device, load the actually game play scene for the user.</p>
 
 <p><aside class="important">
-    <strong>Once a user has requested a tournament, the <code class="prettyprint">bet_size</code> amount of credits will automatically get transferred from the user&rsquo;s wallet to the tournament pot</strong>.
+    <strong>Once a user has requested a tournament, the credits will automatically get transferred from the user&rsquo;s wallet to the tournament pot</strong>.
 </aside></p>
 
 <h3 id="using-tournament-filters">Using Tournament Filters</h3>
@@ -1197,10 +1351,20 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 </aside></p>
 
 <h2 id="logout">Logout</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Logout</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">LogoutButton</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">void</span> <span class="nf">OnMouseUpAsButton</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">Logout</span><span class="p">(</span>  <span class="n">Callback</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// Will print "Hello, anonymous!"
+</span>        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre>
 
-<p>This call will delete all the Arbiter objects (<code class="prettyprint">user</code>, <code class="prettyprint">wallet</code>, <code class="prettyprint">tournaments</code>) from memory and destroy the current session.</p>
+<p>This call will reset all the properties on the <code class="prettyprint">Arbiter</code> class and end the current session.</p>
 
       </div>
       <div class="dark-box">
