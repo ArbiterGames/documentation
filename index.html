@@ -32,6 +32,7 @@
     </div>
     <div class="page-wrapper">
       <div class="dark-box"></div>
+
       <div class="content">
         <h1 id="getting-started">Getting Started</h1>
 
@@ -51,11 +52,6 @@
 </pre>
 
 <p>Your users&#39; devices interact directly with our server. The first time a player&rsquo;s device connects with Arbiter, we create an anonymous <code class="prettyprint">User</code> and return a unique ID for that user. This ID is what you will use to make requests on that user&rsquo;s behalf in the future from your server. By default, all users are playing anonymously. At any point, they can create login credentials for their account to log back in with those credentials using our Login API.</p>
-
-<p><aside>
-    <strong>Who owns the user?</strong><br>
-    You still own your user. The first time a user loads your game with Arbiter installed, we return a unique ID and token for you to store in your user database. All future authentication between Arbiter and your user can be completed using this ID and token.
-</aside></p>
 
 <h3 id="wallet">Wallet</h3>
 <pre class="highlight python"><span class="c"># Example Wallet</span>
@@ -79,6 +75,10 @@
 </pre>
 
 <p>Tournaments are the core class handling all the betting interactions between your players. Your server will create a new <code class="prettyprint">Tournament</code> for each betting interaction between the players in your game. Once a <code class="prettyprint">Tournament</code> has been created, your users will be able to buy in to the <code class="prettyprint">Tournament</code>. After your users have finished battling it out in your game, your server will report who won. Arbiter will then charge a transacaction fee (some for us, and some for you) and then release the remaining funds in the <code class="prettyprint">Tournament</code> to the winning user&rsquo;s Arbiter <code class="prettyprint">Wallet</code>.</p>
+
+<h2 id="no-backend-required">No backend required</h2>
+
+<p>Arbiter is flexible enough to work with multiple patterns</p>
 
 <h2 id="restful">RESTful</h2>
 
@@ -423,7 +423,7 @@ In your dashboard, click the &lsquo;Register new game&rsquo; button in the games
 
 <h1 id="wallet-api">Wallet API</h1>
 
-<h2 id="wallet-details">Wallet details</h2>
+<h2 id="details">Details</h2>
 <pre class="highlight python"><span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="c"># id and token returned from the user/initialize or user/login call</span>
@@ -1051,35 +1051,156 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 
 <p>There may be edge case scenarios where you do not want to use matchmaking for all tournaments in your game. For example, challenging a friend through Facebook. Even if matchmaking is enabled for a game, including a <code class="prettyprint">users</code> array in the <a href="#create">Tournament Create API</a> will disable matchmaking. The tournament will be created with the matched users equal to <code class="prettyprint">users</code> and return a new tournament back in the response.</p>
 
-<h1 id="unity-sdk">Unity SDK</h1>
+<h1 id="unity-ios-sdk">Unity iOS SDK</h1>
 
-<p><a href="https://github.com/andyzinsser/arbiter-ios-sdk-example">Download the SDK</a></p>
+<p>We have a Unity SDK for speeding up the integration when building a game in Unity for iOS. This package wraps all the API interaction into a single Arbiter class.</p>
 
-<h2 id="initialize">Initialize</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Initialize</span><span class="p">(</span> <span class="n">GAME_API_KEY</span><span class="p">,</span> <span class="n">CallbackFunction</span> <span class="p">);</span>
+<h2 id="sdk-flow-overview">SDK Flow Overview</h2>
+
+<p>Below is an outline of the typical flow a user should be taken through when playing an Arbiter enabled game followed by detailed descriptions and code examples of each step. Don&rsquo;t hesitate to message us if you have any questions or issues. <a href="mailto:support@arbiter.me">support@arbiter.me</a></p>
+
+<h3 id="implementation-prerequisites">Implementation Prerequisites</h3>
+
+<p>Complete these steps before writing any code.</p>
+
+<ol>
+<li><a href="#configure-your-game">Configure your game</a> in your developer dashboard.</li>
+<li><a href="https://github.com/ArbiterGames/Unity-SDK">Download the Unity Package</a>.</li>
+<li>Import the package into your Unity game.</li>
+<li>Add the Arbiter Prefab located in <code class="prettyprint">/Assets/Plugins/Arbiter</code> to your loading scene.</li>
+<li>Set your game&rsquo;s API key and your developer access token in the Arbiter Game Object&rsquo;s inspector.</li>
+</ol>
+
+<h3 id="standard-flow-for-your-users">Standard flow for your users</h3>
+
+<p>Each step below is done with a call to the Arbiter SDK.</p>
+
+<ol>
+<li>Authenticate a user session.</li>
+<li>Verify the user&rsquo;s age and location (<em>if this is a new session</em>).</li>
+<li>Display the user&rsquo;s wallet details.</li>
+<li>Prompt the user to deposit Arbiter credits.</li>
+<li>Have the user join a tournament.</li>
+<li>Report the user&rsquo;s score for that tournament.</li>
+<li>View previous tournament results.</li>
+<li>Let the user withdraw their credits when they are done.</li>
+<li>Logout</li>
+</ol>
+
+<h3 id="quick-and-easy-implementation">Quick and Easy Implementation</h3>
+
+<p>The SDK includes iOS UIAlertViews for all the Arbiter UI elements (wallet dashboard screen, previous tournaments, deposits / withdraws, etc). This is the quickest way to integrate Arbiter into your game. Once you have added the Arbiter Game Object to your game, you can start making calls to the SDK and iOS UIAlertViews will automatically be displayed to the user with all the available user inputs in the UIAlertView.</p>
+
+<h3 id="customized-ui-implementation">Customized UI Implementation</h3>
+
+<p>The alternative implementation is for you to create your own custom UI elements that matches your game&rsquo;s look and feel. As you build out your UI elements, you can bind your buttons directly to the Arbiter SDK methods instead of relying on the pre-built UIAlertView inputs.</p>
+
+<h2 id="authenticate-with-game-center">Authenticate with Game Center</h2>
+<pre class="highlight csharp"><span class="k">using</span> <span class="nn">UnityEngine</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.Collections</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">UnityEngine.SocialPlatforms</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">Entrypoint</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">void</span> <span class="nf">Start</span> <span class="p">()</span> <span class="p">{</span>
+<span class="cp">#if UNITY_IOS
+</span>        <span class="n">Action</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span> <span class="n">processAuth</span> <span class="p">=</span> <span class="p">(</span> <span class="n">success</span> <span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+            <span class="k">if</span><span class="p">(</span> <span class="n">success</span> <span class="p">)</span> <span class="p">{</span>
+                <span class="n">Arbiter</span><span class="p">.</span><span class="nf">LoginWithGameCenter</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="n">Debug</span><span class="p">.</span><span class="nf">LogError</span><span class="p">(</span> <span class="s">"Could not authenticate to Game Center!"</span> <span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">};</span>
+        <span class="n">Social</span><span class="p">.</span><span class="n">localUser</span><span class="p">.</span><span class="nf">Authenticate</span><span class="p">(</span> <span class="n">processAuth</span> <span class="p">);</span>
+<span class="cp">#endif
+</span>    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
 </pre>
 
-<h2 id="agree-to-terms-of-service">Agree to Terms of Service</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">VerifyUser</span><span class="p">();</span>
+<p>If your game is setup to integrate with Game Center, a user can link their Arbiter account with a Game Center account. To link with a Game Center account, use Unity&rsquo;s <a href="http://docs.unity3d.com/ScriptReference/Social.html">Social API</a> to get a Game Center <a href="http://docs.unity3d.com/ScriptReference/Social-localUser.html">LocalUser</a>. Once a LocalUser has been created, call <code class="prettyprint">Arbiter.LoginWithGameCenter()</code> to link their Game Center account with Arbiter. Once their Arbiter account has been linked to a Game Center account, they can use their Game Center credentials to establish a new session with their existing Arbiter Wallet in other Arbiter enabled games as well as on other devices.</p>
+
+<h2 id="authenticate-with-a-token">Authenticate with a Token</h2>
+
+<p>A <code class="prettyprint">token</code> is included in the User GET call. If you have your own backend that you are saving your users in, you can save this token with you other user profile info. Then whenever the user authenticates with your server, send the token from your database to the client. Then use the <code class="prettyprint">Login</code> call to establish a new session between the user&rsquo;s device and the Arbiter server.</p>
+
+<h2 id="authenticate-with-username-/-password">Authenticate with Username / Password</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Login</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
 </pre>
 
-<h2 id="query-user">Query User</h2>
+<p>If a user has already created an account through the <a href="https://www.arbiter.me/player-registration">Web Registration</a> or through the <code class="prettyprint">claim_account_url</code>, they can re-establish an existing session using the <code class="prettyprint">Arbiter.Login()</code>. This call will display a UIAlertView with an username and password field. Once the user enters their Arbiter username and password, the user and wallet objects will get returned in the response.</p>
 
-<h2 id="query-wallet">Query Wallet</h2>
-<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">QueryWallet</span><span class="p">();</span>
+<h2 id="verify-the-user">Verify The User</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">VerifyUser</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
 </pre>
 
-<h2 id="deposit">Deposit</h2>
+<p>Whenever a new user is created, in addition to having the user agree to the standard terms and conditions, we need to make sure there are no local regulations restricting online skill based betting.</p>
 
-<h2 id="request-jackpot">Request Jackpot</h2>
+<p><strong>This method will:</strong></p>
 
-<h2 id="place-bet">Place Bet</h2>
+<ol>
+<li>Prompt the user to enable location services (if not already enabled).</li>
+<li>Prompt the user to agree to the <a href="https://www.arbiter.me/terms">Terms and Conditions</a>.</li>
+<li>Send the user&rsquo;s postal code to the Arbiter server to check the legality of online betting in their location.</li>
+</ol>
+
+<h2 id="wallet-details">Wallet Details</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">QueryWallet</span><span class="p">()</span>
+</pre>
+
+<p>Once the user has been verified, you can get their wallet details at anytime using <code class="prettyprint">GetWallet()</code>. This will return a dictionary of the user&rsquo;s wallet details. You can also call <code class="prettyprint">DisplayWalletDetailsSceen()</code> to display the Wallet Dashboard in a native UIAlertView.</p>
+
+<h2 id="deposit-credits">Deposit Credits</h2>
+
+<p>Before a user can start betting, they will need Arbiter credits. Arbiter credits are the betting currency that users will use to bet in your game. Feel free to call them credits, cents, gold, gems, or whatever makes sense for your game.</p>
+
+<p><code class="prettyprint">1 Arbiter credit = $0.01 USD</code></p>
+
+<h2 id="join-a-tournament">Join a Tournament</h2>
+
+<p>Now that the user has credits to bet with, they can request to join tournaments. If there are no current tournaments for the user to join, a new tournament will get created. Once the new tournament has been created on the server and is available on the device, load the actually game play scene for the user.</p>
+
+<p><aside class="important">
+    <strong>Once a user has requested a tournament, the <code class="prettyprint">bet_size</code> amount of credits will automatically get transferred from the user&rsquo;s wallet to the tournament pot</strong>.
+</aside></p>
+
+<h3 id="using-tournament-filters">Using Tournament Filters</h3>
+<pre class="highlight csharp"><span class="kt">string</span> <span class="n">betSize</span> <span class="p">=</span> <span class="s">"100"</span><span class="p">;</span>
+<span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="kt">string</span><span class="p">&gt;</span> <span class="n">filters</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="kt">string</span><span class="p">&gt;();</span>
+<span class="n">filters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span> <span class="s">"arbitrary_key"</span><span class="p">,</span> <span class="s">"the_value"</span> <span class="p">);</span>
+<span class="n">Arbiter</span><span class="p">.</span><span class="nf">GetTournament</span><span class="p">(</span> <span class="n">betSize</span><span class="p">,</span> <span class="n">filters</span><span class="p">,</span> <span class="n">Callback</span> <span class="p">);</span>
+</pre>
+
+<p>You can pass in a <code class="prettyprint">filters</code> dictionary to sort tournaments into different groups. For example, if you want to create a tournament where the users are competing on level 2 of your game, you can set the filters to <code class="prettyprint">{&quot;level&quot;: &quot;2&quot;}</code>. This will make sure that when a user playing level 2 requests a tournament, they will only get matched with other users requesting a tournament for level 2 (rather than level 1 or 3). <code class="prettyprint">level</code> is just an arbitrary example, this can be set to any string.</p>
 
 <h2 id="report-score">Report Score</h2>
+<pre class="highlight csharp"><span class="n">score</span> <span class="p">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">UnityEngine</span><span class="p">.</span><span class="n">Random</span><span class="p">.</span><span class="nf">Range</span><span class="p">(</span> <span class="m">1f</span><span class="p">,</span> <span class="m">100f</span> <span class="p">);</span>
+<span class="n">Arbiter</span><span class="p">.</span><span class="nf">ReportScore</span><span class="p">(</span> <span class="n">TournamentId</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">Callback</span> <span class="p">);</span>
+</pre>
 
-<h2 id="query-jackpot">Query Jackpot</h2>
+<p>After the user has successfully played the game and has generated a numeric score, send the score to the Arbiter server. Once all users in this tournament have reported their scores to the Arbiter server, we will determine the winner based on which user reported the highest score and distribute the credits to the winner&rsquo;s wallet.</p>
 
-<h2 id="cash-out">Cash Out</h2>
+<h2 id="tournament-results">Tournament Results</h2>
+
+<p>This will display a paginated list of the results from previous tournaments the current user has participated in.</p>
+
+<h2 id="withdraw">Withdraw</h2>
+
+<p>Once the user is ready convert their Arbiter credits back to USD, call this method to display the withdraw dialog.</p>
+
+<p><aside class="important">
+    Withdraws can only be made to debit or bank cards. Our payment processor is unable to approve withdraws made to credit cards.
+</aside></p>
+
+<h2 id="logout">Logout</h2>
+<pre class="highlight csharp"><span class="n">Arbiter</span><span class="p">.</span><span class="nf">Logout</span><span class="p">(</span> <span class="n">Callback</span> <span class="p">);</span>
+</pre>
+
+<p>This call will delete all the Arbiter objects (<code class="prettyprint">user</code>, <code class="prettyprint">wallet</code>, <code class="prettyprint">tournaments</code>) from memory and destroy the current session.</p>
 
       </div>
       <div class="dark-box">
