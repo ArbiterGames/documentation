@@ -798,16 +798,43 @@ The SDK includes iOS UIAlertViews for all the Arbiter UI elements (wallet dashbo
 
 The alternative implementation is for you to create your own custom UI elements that matches your game's look and feel. As you build out your UI elements, you can bind your buttons directly to the Arbiter SDK methods instead of relying on the pre-built UIAlertView inputs.
 
+## The Arbiter Game Object
+
+Once the Arbiter Game Object has been added to your loading scene, you will have access to the Arbiter Class. This class contains all the properties and methods that you will interact with throughout the implementation.
+
+### Properties
+
+Name | Type | Description
+--- | --- | ---
+UserId | `string` | The user's unique identifier for Arbiter.
+Username | `string` | The username or email associated with the current Arbiter account.
+Verified | `bool` | Whether or not the user has agreed to the [Terms and Conditions](https://www.arbiter.me/terms/)
+Balance | `string` | The currently available Arbiter credits for this user to bet with.
+PendingBalance | `string` | Any pending Arbiter credits in the user's wallet.
+DepositAddress | `string` | Bitcoin address for purchasing Arbiter credits with Bitcoin
+DepositQrCode | `string` | URL to a QR code for purchasing Arbiter credits with Bitcoin
+WithdrawAddress | `string` | If the user has withdrawn Arbiter credits to a Bitcoin address, this field have their most recently used withdraw address.
+
+### Methods
+
+Name | Description
+--- | ---
+Initialize  | Establishes a new anonymous session between the user's device and the Arbiter server.
+Login | Displays a native UIAlertView for a user to login to an existing Arbiter account.
+LoginWithGameCenter | If the user has already logged into your game using Apple's Game Center, this will link the Game Center user with an Arbiter account.
+Logout | Destroys the current Arbiter session.
+VerifyUser | Prompts the user to agree to the [Terms and Conditions](https://www.arbiter.me/terms/) and verifies that your game is legal to bet on in their local jurisdiction.
+GetWallet | Updates `Arbiter.Balance` and `Arbiter.PendingBalance`.
+DisplayWalletDashboard | Updates Arbiter.Wallet then displays the wallet details in a native UIAlertView along with user inputs such as Deposit and Withdraw.
+JoinTournament | Enters the user in a new tournament.
+ReportScore |  Reports the outcome of a tournament for the current user.
+
+
 
 ## Authenticate with Game Center
 
 ```csharp
-using UnityEngine;
-using System;
-using System.Collections;
-using UnityEngine.SocialPlatforms;
-
-public class Entrypoint : MonoBehaviour {
+public class AnyScriptPriorToBetting : MonoBehaviour {
 
     void Start () {
 #if UNITY_IOS
@@ -830,22 +857,60 @@ public class Entrypoint : MonoBehaviour {
 
 If your game is setup to integrate with Game Center, a user can link their Arbiter account with a Game Center account. To link with a Game Center account, use Unity's [Social API](http://docs.unity3d.com/ScriptReference/Social.html) to get a Game Center [LocalUser](http://docs.unity3d.com/ScriptReference/Social-localUser.html). Once a LocalUser has been created, call `Arbiter.LoginWithGameCenter()` to link their Game Center account with Arbiter. Once their Arbiter account has been linked to a Game Center account, they can use their Game Center credentials to establish a new session with their existing Arbiter Wallet in other Arbiter enabled games as well as on other devices.
 
-## Authenticate with a Token
+## Custom Authentication
 
-A `token` is included in the User GET call. If you have your own backend that you are saving your users in, you can save this token with you other user profile info. Then whenever the user authenticates with your server, send the token from your database to the client. Then use the `Login` call to establish a new session between the user's device and the Arbiter server.
+```csharp
+public class Entrypoint : MonoBehaviour {
+
+    private static string accessToken = TOKEN_FROM_YOUR_DATABASE_FROM_PREVIOUS_SESSION;
+
+    void Start () {
+        Arbiter.SetUserAccessToken( accessToken );
+    }
+
+    void Callback() {
+        Debug.Log( "Hello, " + Arbiter.Username + "!" );
+    }
+}
+```
+
+If you already have authentication setup for your users within your game, they do not need to create an additional account on Arbiter. The first time a user loads your game, call `Arbiter.Initialize()` to create a new session on Arbiter. This will set `Arbiter.UserAccessToken` to a unique string that can be used for authenticated requests on behalf of this user. Save that token with your user in your database. Then, whenever one of your users re-loads your game, call `Arbiter.SetUserAccessToken( userAccessToken )` to re-establish a session with the correct Arbiter account for that user.
+
+<aside class="warning">
+    <strong>Keep your users' access tokens private</strong><br>
+    Be sure that you are only sending the tokens over https and that you are storing them encypted in your database. Getting access to a user's token is equivalent to getting access to their username and password.
+</aside>
 
 ## Authenticate with Username / Password
 
 ```csharp
-Arbiter.Login( Callback );
+public class LoginButton : MonoBehaviour {
+
+    void OnMouseUpAsButton() {
+        Arbiter.Login(  Callback );
+    }
+
+    void Callback() {
+        Debug.Log( "Hello, " + Arbiter.Username + "!" );
+    }
+}
 ```
 
-If a user has already created an account through the [Web Registration](https://www.arbiter.me/player-registration) or through the `claim_account_url`, they can re-establish an existing session using the `Arbiter.Login()`. This call will display a UIAlertView with an username and password field. Once the user enters their Arbiter username and password, the user and wallet objects will get returned in the response.
+If a user has already created an account through the [Web Registration](https://www.arbiter.me/player-registration) or through the `claim_account_url`, they can re-establish an existing session using the `Arbiter.Login()`. This call will display a UIAlertView with an email and password field. Upon successful login, `Arbiter.UserId` and `Arbiter.Balance` will have the correct values.
 
 ## Verify The User
 
 ```csharp
-Arbiter.VerifyUser( Callback );
+public class AnyScriptPriorToBetting : MonoBehaviour {
+
+    void VerificationStep() {
+        Arbiter.VerifyUser(  Callback );
+    }
+
+    void Callback() {
+        Debug.Log( Arbiter.Username + " is now verified: " + Arbiter.Verified );
+    }
+}
 ```
 
 Whenever a new user is created, in addition to having the user agree to the standard terms and conditions, we need to make sure there are no local regulations restricting online skill based betting.
@@ -856,12 +921,35 @@ Whenever a new user is created, in addition to having the user agree to the stan
 2. Prompt the user to agree to the [Terms and Conditions](https://www.arbiter.me/terms).
 3. Send the user's postal code to the Arbiter server to check the legality of online betting in their location.
 
-## Wallet Details
+## Get Wallet
 
 ```csharp
-Arbiter.QueryWallet()
+public class SetupWalletHandlerScript : MonoBehaviour {
+
+    void Start() {
+        Arbiter.AddWalletListener(  UpdateWalletUIElements );
+    }
+
+    void UpdateWalletUIElements() {
+        Debug.Log( "Balance: " + Arbiter.Balance );
+    }
+
+    void ExampleOfRemovingWalletListener() {
+        Arbiter.RemoveWalletListener( UpdateWalletUIElements );
+    }
+}
+
+public class RefreshWalletButton : MonoBehaviour {
+
+    void OnMouseUpAsButton() {
+        Arbiter.GetWallet();
+    }
+}
 ```
-Once the user has been verified, you can get their wallet details at anytime using `GetWallet()`. This will return a dictionary of the user's wallet details. You can also call `DisplayWalletDetailsSceen()` to display the Wallet Dashboard in a native UIAlertView.
+
+Before getting a wallet for the first time, you can setup wallet listeners. This way, whenever the wallet is updated, you can bind your own handlers for updating you UI elements and such.
+
+Calling `Arbiter.GetWallet()` will request the latest wallet detials from the server and then setup automatic polling at incrementing intervals. Anytime you call `Arbiter.GetWallet()` the polling intervals will reset the inrements.
 
 ## Deposit Credits
 
@@ -874,7 +962,7 @@ Before a user can start betting, they will need Arbiter credits. Arbiter credits
 Now that the user has credits to bet with, they can request to join tournaments. If there are no current tournaments for the user to join, a new tournament will get created. Once the new tournament has been created on the server and is available on the device, load the actually game play scene for the user.
 
 <aside class="important">
-    **Once a user has requested a tournament, the `bet_size` amount of credits will automatically get transferred from the user's wallet to the tournament pot**.
+    **Once a user has requested a tournament, the credits will automatically get transferred from the user's wallet to the tournament pot**.
 </aside>
 
 ### Using Tournament Filters
@@ -912,7 +1000,17 @@ Once the user is ready convert their Arbiter credits back to USD, call this meth
 ## Logout
 
 ```csharp
-Arbiter.Logout( Callback );
+public class LogoutButton : MonoBehaviour {
+
+    void OnMouseUpAsButton() {
+        Arbiter.Logout(  Callback );
+    }
+
+    void Callback() {
+        // Will print "Hello, anonymous!"
+        Debug.Log( "Hello, " + Arbiter.Username + "!" );
+    }
+}
 ```
 
-This call will delete all the Arbiter objects (`user`, `wallet`, `tournaments`) from memory and destroy the current session.
+This call will reset all the properties on the `Arbiter` class and end the current session.

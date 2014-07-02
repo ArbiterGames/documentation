@@ -368,6 +368,10 @@ html, body {
 
       td {
         padding: 10px;
+
+        code {
+          word-break: normal;
+        }
       }
 
       tr:last-child {
