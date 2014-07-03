@@ -806,6 +806,7 @@ Once the Arbiter Game Object has been added to your loading scene, you will have
 
 Name | Type | Description
 --- | --- | ---
+IsAuthenticated | `bool` | Whether or not there is a currently authenticated session between the device and the Arbiter server.
 UserId | `string` | The user's unique identifier on Arbiter.
 Username | `string` | The username or email associated with the current Arbiter account.
 AccessToken | `string` | The access token for this user to make authenticated requests to the Arbiter server.
@@ -820,7 +821,6 @@ WithdrawAddress | `string` | If the user has withdrawn Arbiter credits to a Bitc
 
 Name | Description
 --- | ---
-Initialize  | Establishes a new anonymous session between the user's device and the Arbiter server.
 LoginWithAccessToken | Establishes a new session for an existing user based on an access token.
 LoginWithGameCenter | If the user has already logged into your game using Apple's Game Center, this will link the Game Center user with an Arbiter account.
 Login | Displays a native UIAlertView for a user to login to an existing Arbiter account.
@@ -834,38 +834,6 @@ JoinTournament | Enters the user in a new tournament.
 ReportScore |  Reports the outcome of a tournament for the current user.
 GetTournaments | Returns a paginated list of a user's previous tournaments.
 DisplayPreviousTournaments | Displays the the paginated list of previous tournaments in a native UIAlertView.
-
-
-## Initialize
-
-```csharp
-public class Entrypoint : MonoBehaviour {
-
-    void Start () {
-        Arbiter.Initialize( Callback );
-    }
-
-    void Callback() {
-        // Will print "Hello, Anonymous!"
-        Debug.Log( "Hello, " + Arbiter.Username + "!" );
-    }
-}
-```
-
-Call this the very first time that a user loads your game. This will create a new user on the Arbiter server followed by bootstrapping the `Arbiter` class on the user's device.
-
-**After calling initialize, the following `Arbiter` properties should have values:**
-
-Property | Type | Value
---- | --- | ---
-UserId | `string` | A unique identifier for this user.
-Username | `string` | Anonymous. Once the user connects with Game Center or creates an Arbiter account through the web dashboard, this will stay as anonymous.
-AccessToken | `string` | The token used for authenticating this user in future requests made to the Arbiter server.
-Verified | `bool` | `false`. Once `Arbiter.VerifyUser()` is successfully completed, this will be `true`
-Balance | `string` | `0`. Once the user successfully deposits Arbiter credits, this will get updated.
-PendingBalance | `string` | `0`. If a user deposits using Bitcoin, $0.50 worth of Bitcoin will instantly get added to `Arbiter.Balance`. The remainder will stay in `Arbiter.PendingBalance` until the transaction gets 2 confirmations on the Bitcoin network.
-DepositAddress | `string` | A new Bitcoin deposit address for the user to deposit to.
-DepositQrCode | `string` | A URL to a QR code for the `Arbiter.DepositAddress`
 
 
 ## Login With Access Token
