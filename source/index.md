@@ -807,10 +807,12 @@ Once the Arbiter Game Object has been added to your loading scene, you will have
 Name | Type | Description
 --- | --- | ---
 IsAuthenticated | `bool` | Whether or not there is a currently authenticated session between the device and the Arbiter server.
+Verified | `bool` | Will return `true` only if the user has agreed to the [Terms and Conditions](https://www.arbiter.me/terms/) AND their location has been approved for you game.
+LocationApproved | `bool` | Whether or not the user's location has been approved for betting in your game.
+AgreedToTerms | `bool` | Whether or not the user has agreed to the [Terms and Conditions](https://www.arbiter.me/terms/)
 UserId | `string` | The user's unique identifier on Arbiter.
 Username | `string` | The username or email associated with the current Arbiter account.
 AccessToken | `string` | The access token for this user to make authenticated requests to the Arbiter server.
-Verified | `bool` | Whether or not the user has agreed to the [Terms and Conditions](https://www.arbiter.me/terms/)
 Balance | `string` | The currently available Arbiter credits for this user to bet with.
 PendingBalance | `string` | Any pending Arbiter credits in the user's wallet.
 DepositAddress | `string` | Bitcoin address for purchasing Arbiter credits with Bitcoin
@@ -821,8 +823,9 @@ WithdrawAddress | `string` | If the user has withdrawn Arbiter credits to a Bitc
 
 Name | Description
 --- | ---
-LoginWithAccessToken | Establishes a new session for an existing user based on an access token.
+LoginAsAnonymous | This will create an anonymous session for the user. The session will persist until they either reset their saved data or user the `Logout` call.
 LoginWithGameCenter | If the user has already logged into your game using Apple's Game Center, this will link the Game Center user with an Arbiter account.
+LoginWithAccessToken `Coming soon`  | Establishes a new session for an existing user based on an access token.
 Login | Displays a native UIAlertView for a user to login to an existing Arbiter account.
 Logout | Destroys the current Arbiter session.
 VerifyUser | Prompts the user to agree to the [Terms and Conditions](https://www.arbiter.me/terms/) and verifies that your game is legal to bet on in their local jurisdiction.
@@ -836,31 +839,24 @@ GetTournaments | Returns a paginated list of a user's previous tournaments.
 DisplayPreviousTournaments | Displays the the paginated list of previous tournaments in a native UIAlertView.
 
 
-## Login With Access Token
-
+## Login As Anonymous
 ```csharp
-public class Entrypoint : MonoBehaviour {
+public class LoginButton : MonoBehaviour {
 
-    private static string accessToken = TOKEN_FROM_YOUR_DATABASE_SAVED_FROM_PREVIOUS_SESSION;
-
-    void Start () {
-        Arbiter.LoginWithAccessToken( accessToken );
+    void OnMouseUpAsButton() {
+        Arbiter.LoginAsAnonymous(  Callback );
     }
 
     void Callback() {
+        // Will print "Hello, anonymous!"
         Debug.Log( "Hello, " + Arbiter.Username + "!" );
     }
 }
 ```
 
-If your game already has user authentication on your server, your users do not have to create new Arbiter account credentials.
+This will create an anonymous session for the user. The session will persist until they either reset their saved data or user the `Logout` call.
 
-The first time a user loads your game, call `Arbiter.Initialize()` to create a new session on Arbiter. This will set `Arbiter.AccessToken` to a string that can be used for authenticated requests for this user. Save that token with the user in your database. Then, whenever one of your users re-loads your game, call `Arbiter.LoginWithAccessToken( accessToken )` to re-establish a session with the correct Arbiter account for that user.
-
-<aside class="warning">
-    <strong>Keep your users' access tokens private</strong><br>
-    Be sure that you are only sending the tokens over https and that you are storing them encypted in your database. Getting access to a user's token is equivalent to getting access to their username and password.
-</aside>
+This will give a user most of the functionality as `LoginWithGameCenter` and `Login`, except when they want to Withdraw. Due to money laundering regulations, we cannot permit withdrawing until we gather some extra info from the user. When an anonymous user attempts to make a withdraw, they will be prompted to create a full account. After doing so, they will then be able to log back into that account using the `Login` method.
 
 
 ## Login with Game Center
@@ -910,6 +906,36 @@ public class LoginButton : MonoBehaviour {
 ```
 
 If a user has already created an account through the [Web Registration](https://www.arbiter.me/player-registration) or through the `claim_account_url`, they can re-establish an existing session using the `Arbiter.Login()`. This call will display a UIAlertView with an email and password field. Upon successful login, all the `Arbiter` properties will get set with the correct values.
+
+
+## Login With Access Token
+
+```csharp
+public class Entrypoint : MonoBehaviour {
+
+    private static string accessToken = TOKEN_FROM_YOUR_DATABASE_SAVED_FROM_PREVIOUS_SESSION;
+
+    void Start () {
+        Arbiter.LoginWithAccessToken( accessToken );
+    }
+
+    void Callback() {
+        Debug.Log( "Hello, " + Arbiter.Username + "!" );
+    }
+}
+```
+
+`Coming Soon...`
+
+If your game already has user authentication on your server, your users do not have to create new Arbiter account credentials.
+
+The first time a user loads your game, call `Arbiter.Initialize()` to create a new session on Arbiter. This will set `Arbiter.AccessToken` to a string that can be used for authenticated requests for this user. Save that token with the user in your database. Then, whenever one of your users re-loads your game, call `Arbiter.LoginWithAccessToken( accessToken )` to re-establish a session with the correct Arbiter account for that user.
+
+<aside class="warning">
+    <strong>Keep your users' access tokens private</strong><br>
+    Be sure that you are only sending the tokens over https and that you are storing them encypted in your database. Getting access to a user's token is equivalent to getting access to their username and password.
+</aside>
+
 
 ## Verify The User
 
