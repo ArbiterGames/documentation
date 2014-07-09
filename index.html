@@ -1114,6 +1114,21 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <td>Whether or not there is a currently authenticated session between the device and the Arbiter server.</td>
 </tr>
 <tr>
+<td>Verified</td>
+<td><code class="prettyprint">bool</code></td>
+<td>Will return <code class="prettyprint">true</code> only if the user has agreed to the <a href="https://www.arbiter.me/terms/">Terms and Conditions</a> AND their location has been approved for you game.</td>
+</tr>
+<tr>
+<td>LocationApproved</td>
+<td><code class="prettyprint">bool</code></td>
+<td>Whether or not the user&rsquo;s location has been approved for betting in your game.</td>
+</tr>
+<tr>
+<td>AgreedToTerms</td>
+<td><code class="prettyprint">bool</code></td>
+<td>Whether or not the user has agreed to the <a href="https://www.arbiter.me/terms/">Terms and Conditions</a></td>
+</tr>
+<tr>
 <td>UserId</td>
 <td><code class="prettyprint">string</code></td>
 <td>The user&rsquo;s unique identifier on Arbiter.</td>
@@ -1127,11 +1142,6 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 <td>AccessToken</td>
 <td><code class="prettyprint">string</code></td>
 <td>The access token for this user to make authenticated requests to the Arbiter server.</td>
-</tr>
-<tr>
-<td>Verified</td>
-<td><code class="prettyprint">bool</code></td>
-<td>Whether or not the user has agreed to the <a href="https://www.arbiter.me/terms/">Terms and Conditions</a></td>
 </tr>
 <tr>
 <td>Balance</td>
@@ -1169,12 +1179,16 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 </tr>
 </thead><tbody>
 <tr>
-<td>LoginWithAccessToken</td>
-<td>Establishes a new session for an existing user based on an access token.</td>
+<td>LoginAsAnonymous</td>
+<td>This will create an anonymous session for the user. The session will persist until they either reset their saved data or user the <code class="prettyprint">Logout</code> call.</td>
 </tr>
 <tr>
 <td>LoginWithGameCenter</td>
 <td>If the user has already logged into your game using Apple&rsquo;s Game Center, this will link the Game Center user with an Arbiter account.</td>
+</tr>
+<tr>
+<td>LoginWithAccessToken <code class="prettyprint">Coming soon</code></td>
+<td>Establishes a new session for an existing user based on an access token.</td>
 </tr>
 <tr>
 <td>Login</td>
@@ -1222,29 +1236,23 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 </tr>
 </tbody></table>
 
-<h2 id="login-with-access-token">Login With Access Token</h2>
-<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">Entrypoint</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+<h2 id="login-as-anonymous">Login As Anonymous</h2>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">LoginButton</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
 
-    <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">accessToken</span> <span class="p">=</span> <span class="n">TOKEN_FROM_YOUR_DATABASE_SAVED_FROM_PREVIOUS_SESSION</span><span class="p">;</span>
-
-    <span class="k">void</span> <span class="nf">Start</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">LoginWithAccessToken</span><span class="p">(</span> <span class="n">accessToken</span> <span class="p">);</span>
+    <span class="k">void</span> <span class="nf">OnMouseUpAsButton</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">LoginAsAnonymous</span><span class="p">(</span>  <span class="n">Callback</span> <span class="p">);</span>
     <span class="p">}</span>
 
     <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
-        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
+        <span class="c1">// Will print "Hello, anonymous!"
+</span>        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre>
 
-<p>If your game already has user authentication on your server, your users do not have to create new Arbiter account credentials.</p>
+<p>This will create an anonymous session for the user. The session will persist until they either reset their saved data or user the <code class="prettyprint">Logout</code> call.</p>
 
-<p>The first time a user loads your game, call <code class="prettyprint">Arbiter.Initialize()</code> to create a new session on Arbiter. This will set <code class="prettyprint">Arbiter.AccessToken</code> to a string that can be used for authenticated requests for this user. Save that token with the user in your database. Then, whenever one of your users re-loads your game, call <code class="prettyprint">Arbiter.LoginWithAccessToken( accessToken )</code> to re-establish a session with the correct Arbiter account for that user.</p>
-
-<p><aside class="warning">
-    <strong>Keep your users&#39; access tokens private</strong><br>
-    Be sure that you are only sending the tokens over https and that you are storing them encypted in your database. Getting access to a user&rsquo;s token is equivalent to getting access to their username and password.
-</aside></p>
+<p>This will give a user most of the functionality as <code class="prettyprint">LoginWithGameCenter</code> and <code class="prettyprint">Login</code>, except when they want to Withdraw. Due to money laundering regulations, we cannot permit withdrawing until we gather some extra info from the user. When an anonymous user attempts to make a withdraw, they will be prompted to create a full account. After doing so, they will then be able to log back into that account using the <code class="prettyprint">Login</code> method.</p>
 
 <h2 id="login-with-game-center">Login with Game Center</h2>
 <pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">AnyScriptPriorToBetting</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
@@ -1288,6 +1296,32 @@ Bitcoin is exchanged at time of deposit and withdraw at <a href="https://coinbas
 </pre>
 
 <p>If a user has already created an account through the <a href="https://www.arbiter.me/player-registration">Web Registration</a> or through the <code class="prettyprint">claim_account_url</code>, they can re-establish an existing session using the <code class="prettyprint">Arbiter.Login()</code>. This call will display a UIAlertView with an email and password field. Upon successful login, all the <code class="prettyprint">Arbiter</code> properties will get set with the correct values.</p>
+
+<h2 id="login-with-access-token">Login With Access Token</h2>
+<pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">Entrypoint</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
+
+    <span class="k">private</span> <span class="k">static</span> <span class="kt">string</span> <span class="n">accessToken</span> <span class="p">=</span> <span class="n">TOKEN_FROM_YOUR_DATABASE_SAVED_FROM_PREVIOUS_SESSION</span><span class="p">;</span>
+
+    <span class="k">void</span> <span class="nf">Start</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">Arbiter</span><span class="p">.</span><span class="nf">LoginWithAccessToken</span><span class="p">(</span> <span class="n">accessToken</span> <span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">void</span> <span class="nf">Callback</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span> <span class="s">"Hello, "</span> <span class="p">+</span> <span class="n">Arbiter</span><span class="p">.</span><span class="n">Username</span> <span class="p">+</span> <span class="s">"!"</span> <span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre>
+
+<p><code class="prettyprint">Coming Soon...</code></p>
+
+<p>If your game already has user authentication on your server, your users do not have to create new Arbiter account credentials.</p>
+
+<p>The first time a user loads your game, call <code class="prettyprint">Arbiter.Initialize()</code> to create a new session on Arbiter. This will set <code class="prettyprint">Arbiter.AccessToken</code> to a string that can be used for authenticated requests for this user. Save that token with the user in your database. Then, whenever one of your users re-loads your game, call <code class="prettyprint">Arbiter.LoginWithAccessToken( accessToken )</code> to re-establish a session with the correct Arbiter account for that user.</p>
+
+<p><aside class="warning">
+    <strong>Keep your users&#39; access tokens private</strong><br>
+    Be sure that you are only sending the tokens over https and that you are storing them encypted in your database. Getting access to a user&rsquo;s token is equivalent to getting access to their username and password.
+</aside></p>
 
 <h2 id="verify-the-user">Verify The User</h2>
 <pre class="highlight csharp"><span class="k">public</span> <span class="k">class</span> <span class="nc">AnyScriptPriorToBetting</span> <span class="p">:</span> <span class="n">MonoBehaviour</span> <span class="p">{</span>
